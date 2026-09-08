@@ -1,0 +1,2745 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>Kisan-Net</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <style>
+        /* ─── preserved from original, with additions ─── */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, 'Noto Sans Devanagari', sans-serif;
+            background: #f7f3ee;
+            color: #2d2a24;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0 0 80px 0;
+        }
+        #app {
+            max-width: 480px;
+            width: 100%;
+            background: #fcf9f6;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.06);
+            position: relative;
+            padding-bottom: 80px;
+        }
+        @media (min-width: 640px) {
+            #app {
+                border-radius: 24px;
+                margin: 16px auto;
+                min-height: calc(100vh - 32px);
+                box-shadow: 0 8px 48px rgba(0, 0, 0, 0.08);
+            }
+            body {
+                padding: 0 16px 16px 16px;
+                background: #ede8e2;
+            }
+        }
+        @media (min-width: 1024px) {
+            #app {
+                max-width: 520px;
+            }
+        }
+
+        .text-display {
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .text-display-lg {
+            font-size: 2.8rem;
+            font-weight: 700;
+            line-height: 1.15;
+        }
+        .text-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .text-body {
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+        .text-body-sm {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .btn-primary {
+            background: #2b6e3b;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.2rem;
+            padding: 16px 28px;
+            border-radius: 60px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            min-height: 60px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(43, 110, 59, 0.25);
+        }
+        .btn-primary:active {
+            transform: scale(0.97);
+            background: #1f5530;
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .btn-secondary {
+            background: #e8e2db;
+            color: #2d2a24;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 14px 24px;
+            border-radius: 60px;
+            border: none;
+            cursor: pointer;
+            min-height: 56px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .btn-secondary:active {
+            transform: scale(0.97);
+            background: #d9d1c8;
+        }
+        .btn-outline {
+            background: transparent;
+            color: #2b6e3b;
+            font-weight: 600;
+            font-size: 1.05rem;
+            padding: 12px 20px;
+            border-radius: 60px;
+            border: 2px solid #2b6e3b;
+            cursor: pointer;
+            min-height: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+        }
+        .btn-outline:active {
+            background: rgba(43, 110, 59, 0.08);
+        }
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 20px 18px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0ebe6;
+        }
+        .card-selected {
+            border-color: #2b6e3b;
+            background: #f6faf5;
+        }
+        .card-recommended {
+            border-color: #2b6e3b;
+            background: linear-gradient(135deg, #f6faf5 0%, #edf5ea 100%);
+            box-shadow: 0 4px 24px rgba(43, 110, 59, 0.12);
+        }
+        .crop-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .crop-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px 8px;
+            text-align: center;
+            border: 2px solid #ede8e2;
+            cursor: pointer;
+            transition: border-color 0.15s;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .crop-card .crop-icon {
+            font-size: 2rem;
+        }
+        .crop-card .crop-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #2d2a24;
+        }
+        .crop-card.selected {
+            border-color: #2b6e3b;
+            background: #f6faf5;
+        }
+        .qty-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 8px 0;
+        }
+        .qty-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 60px;
+            border: 2px solid #d5cdc4;
+            background: #fff;
+            font-size: 1.8rem;
+            font-weight: 300;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qty-btn:active {
+            transform: scale(0.92);
+        }
+        .qty-number {
+            font-size: 2.8rem;
+            font-weight: 700;
+            min-width: 64px;
+            text-align: center;
+            color: #2d2a24;
+        }
+        .qty-input {
+            font-size: 2.8rem;
+            font-weight: 700;
+            width: 100px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            color: #2d2a24;
+            outline: none;
+            font-family: inherit;
+        }
+        .qty-quick {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+        .qty-quick button {
+            padding: 10px 20px;
+            border-radius: 40px;
+            border: 2px solid #d5cdc4;
+            background: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            min-height: 44px;
+        }
+        .location-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .location-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px 12px;
+            border: 2px solid #ede8e2;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        .location-card.selected {
+            border-color: #2b6e3b;
+            background: #f6faf5;
+        }
+        .market-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px 16px;
+            border: 1px solid #ede8e2;
+            cursor: pointer;
+        }
+        .market-card .market-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .market-card .market-price {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #2b6e3b;
+        }
+        .market-card .market-net {
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: #1f4a2c;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 480px;
+            width: 100%;
+            background: #fff;
+            border-top: 1px solid #ede8e2;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 env(safe-area-inset-bottom, 8px) 0;
+            z-index: 100;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+        }
+        @media (min-width: 640px) {
+            .bottom-nav {
+                max-width: 520px;
+                border-radius: 0 0 24px 24px;
+            }
+        }
+        .bottom-nav button {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #8a7e72;
+            cursor: pointer;
+            min-height: 48px;
+            min-width: 60px;
+        }
+        .bottom-nav button .nav-icon {
+            font-size: 1.5rem;
+        }
+        .bottom-nav button.active {
+            color: #2b6e3b;
+        }
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            padding: 4px 0 8px 0;
+        }
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 60px;
+            background: #d5cdc4;
+            transition: background 0.2s, width 0.2s;
+        }
+        .step-dot.active {
+            background: #2b6e3b;
+            width: 28px;
+        }
+        .step-dot.done {
+            background: #8ab892;
+        }
+        .badge-up {
+            color: #1f7a3d;
+            background: #e3f3e8;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-down {
+            color: #b13e3e;
+            background: #fdeaea;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-stable {
+            color: #6b6258;
+            background: #ede8e2;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-locked {
+            color: #8a7e72;
+            background: #f0ebe6;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .toast-container {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 440px;
+            width: 90%;
+            z-index: 999;
+            pointer-events: none;
+        }
+        .toast {
+            background: #2d2a24;
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 16px;
+            font-weight: 500;
+            font-size: 1rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+            pointer-events: auto;
+            animation: toastIn 0.25s ease;
+            margin-bottom: 8px;
+        }
+        .toast-success {
+            background: #2b6e3b;
+        }
+        .toast-error {
+            background: #b13e3e;
+        }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .divider {
+            height: 1px;
+            background: #ede8e2;
+            margin: 16px 0;
+        }
+        .bg-warm {
+            background: #f7f3ee;
+        }
+        .text-earth {
+            color: #5a524a;
+        }
+        .text-green-deep {
+            color: #2b6e3b;
+        }
+        .view-content {
+            padding: 16px 18px 20px 18px;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .hidden-view {
+            display: none !important;
+        }
+        .lang-selector {
+            display: flex;
+            gap: 4px;
+            background: #ede8e2;
+            border-radius: 40px;
+            padding: 3px;
+        }
+        .lang-selector button {
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            background: transparent;
+            color: #6b6258;
+            cursor: pointer;
+        }
+        .lang-selector button.active {
+            background: #fff;
+            color: #2b6e3b;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .disclaimer {
+            background: #f7f3ee;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            color: #6b6258;
+            text-align: center;
+            border: 1px solid #ede8e2;
+        }
+        .market-scroll {
+            max-height: 460px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .market-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .market-scroll::-webkit-scrollbar-track {
+            background: #ede8e2;
+            border-radius: 8px;
+        }
+        .market-scroll::-webkit-scrollbar-thumb {
+            background: #b5aaa0;
+            border-radius: 8px;
+        }
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 60px;
+            background: #2b6e3b;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            border: none;
+        }
+        .notification-badge {
+            position: relative;
+        }
+        .notification-badge .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #b13e3e;
+            color: #fff;
+            border-radius: 60px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            min-width: 18px;
+            text-align: center;
+        }
+        @media (max-width: 400px) {
+            .crop-grid {
+                gap: 8px;
+            }
+            .crop-card {
+                padding: 12px 4px;
+                min-height: 74px;
+            }
+            .crop-card .crop-icon {
+                font-size: 1.6rem;
+            }
+            .crop-card .crop-name {
+                font-size: 0.8rem;
+            }
+            .qty-number {
+                font-size: 2.2rem;
+                min-width: 48px;
+            }
+            .qty-input {
+                font-size: 2.2rem;
+                width: 72px;
+            }
+            .location-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .location-card {
+                padding: 12px 8px;
+                min-height: 52px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="toast-container" id="toastContainer"></div>
+
+        <!-- ─── VIEW: LOGIN ─── -->
+        <div id="view-login" class="view-content">
+            <div class="text-center mt-8">
+                <div class="text-4xl font-bold text-green-deep">Kisan-Net</div>
+                <div class="text-sm text-earth mt-1" id="loginTagline">योग्य बाजार, योग्य भाव, योग्य निर्णय.</div>
+                <div class="mt-8 text-title" id="loginHeading">Kisan-Net मध्ये स्वागत आहे</div>
+                <div class="mt-4 card text-left">
+                    <div class="mb-3">
+                        <label class="text-sm font-medium text-earth" id="loginMobileLabel">मोबाइल नंबर</label>
+                        <input type="tel" id="loginMobile" class="w-full border border-gray-300 rounded-lg p-3 text-lg mt-1" placeholder="98XXXXXXXX" value="9876543210" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-sm font-medium text-earth" id="loginPasswordLabel">पासवर्ड</label>
+                        <input type="password" id="loginPassword" class="w-full border border-gray-300 rounded-lg p-3 text-lg mt-1" placeholder="********" value="password" />
+                    </div>
+                    <button class="btn-primary mt-2" id="loginBtn">
+                        <span id="loginBtnLabel">लॉग इन करा</span>
+                    </button>
+                    <div class="text-center mt-3 text-sm text-earth" id="loginSignupHint">नवीन शेतकरी? खाते तयार करा</div>
+                    <div class="mt-2 text-xs text-earth bg-warm p-2 rounded-lg text-center" id="loginDemoHint">Demo: कोणत्याही मोबाइल नंबरने लॉग इन करा.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: HOME (farmer dashboard) ─── -->
+        <div id="view-home" class="view-content hidden-view">
+            <div class="flex items-center justify-between mb-2">
+  <div class="text-2xl font-bold text-green-deep">Kisan-Net</div>
+  <div class="flex items-center gap-2">
+    <!-- Language Dropdown -->
+    <select id="homeLangSelect" class="bg-white border border-gray-300 rounded-full px-3 py-1 text-sm font-medium text-earth focus:outline-none focus:ring-2 focus:ring-green-600">
+      <option value="mr">मराठी</option>
+      <option value="hi">हिंदी</option>
+      <option value="en">English</option>
+    </select>
+    <button class="notification-badge relative" id="notificationBell">
+      <span class="text-2xl">🔔</span>
+      <span class="badge hidden" id="notifBadge">0</span>
+    </button>
+    <button class="profile-icon" id="profileIcon">👤</button>
+  </div>
+</div>
+            <div class="mt-2">
+                <div class="text-2xl font-bold" id="homeGreeting">नमस्कार, रमेश! 👋</div>
+                <div class="text-title text-earth mt-1" id="homeQuestion">आज काय विकायचे आहे?</div>
+            </div>
+            <div class="mt-5">
+                <button class="btn-primary" id="btnSellProduce">
+                    <span id="btnSellLabel">माझा माल विकायचा आहे</span>
+                </button>
+            </div>
+            <div class="mt-4">
+                <button class="btn-secondary" id="btnTodayPrices">
+                    <span id="todayPricesLabel">आजचे बाजारभाव</span>
+                </button>
+            </div>
+            <div class="mt-5 card" id="offersSummaryCard">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm text-earth" id="myOffersTitle">माझ्या ऑफर्स</div>
+                        <div class="text-2xl font-bold" id="offersCount">0</div>
+                    </div>
+                    <button class="btn-outline w-auto px-6 py-2 text-sm" id="viewOffersBtn">
+                        <span id="viewOffersLabel">ऑफर्स पहा</span>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-4 disclaimer">
+                <span id="demoDisclaimerHome">ही माहिती नमुना (Demo) आहे — प्रत्यक्ष बाजारभाव नाही.</span>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: PROFILE ─── -->
+        <div id="view-profile" class="view-content hidden-view">
+            <div class="flex items-center justify-between mb-3">
+  <div class="flex items-center gap-3">
+    <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="profileBackBtn">←</button>
+    <div class="text-title font-bold" id="profileHeading">माझे प्रोफाइल</div>
+  </div>
+  <select id="profileLangSelect" class="bg-white border border-gray-300 rounded-full px-3 py-1 text-sm font-medium text-earth focus:outline-none focus:ring-2 focus:ring-green-600">
+    <option value="mr">मराठी</option>
+    <option value="hi">हिंदी</option>
+    <option value="en">English</option>
+  </select>
+</div>
+            <div class="card" id="profileCard">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="text-4xl">👤</span>
+                    <div>
+                        <div class="text-xl font-bold" id="profileName">रमेश पाटील</div>
+                        <div class="text-sm text-earth" id="profileVillage">वाघोली, पुणे</div>
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div><span class="text-earth">📞</span> <span id="profilePhone">98XXXXXX90</span></div>
+                    <div><span class="text-earth">🌾</span> <span id="profileOffers">0 सक्रिय ऑफर्स</span></div>
+                </div>
+                <div class="mt-3">
+                    <button class="btn-outline" id="editProfileBtn">
+                        <span id="editProfileLabel">प्रोफाइल संपादित करा</span>
+                    </button>
+                </div>
+                <div class="mt-3">
+                    <button class="btn-secondary" id="logoutBtn">
+                        <span id="logoutLabel">लॉगआउट</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: EDIT PROFILE ─── -->
+        <div id="view-edit-profile" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-3">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="editProfileBackBtn">←</button>
+                <div class="text-title font-bold" id="editProfileHeading">प्रोफाइल संपादित करा</div>
+            </div>
+            <div class="card">
+                <div class="mb-3">
+                    <label class="text-sm font-medium text-earth" id="editNameLabel">नाव</label>
+                    <input type="text" id="editName" class="w-full border border-gray-300 rounded-lg p-3 text-lg mt-1" />
+                </div>
+                <div class="mb-3">
+                    <label class="text-sm font-medium text-earth" id="editVillageLabel">गाव</label>
+                    <input type="text" id="editVillage" class="w-full border border-gray-300 rounded-lg p-3 text-lg mt-1" />
+                </div>
+                <div class="mb-3">
+                    <label class="text-sm font-medium text-earth" id="editDistrictLabel">जिल्हा</label>
+                    <input type="text" id="editDistrict" class="w-full border border-gray-300 rounded-lg p-3 text-lg mt-1" />
+                </div>
+                <div class="mb-3">
+                    <label class="text-sm font-medium text-earth" id="editLangLabel">भाषा</label>
+                    <select id="editLang" class="w-full border border-gray-300 rounded-lg p-3 text-lg mt-1">
+                        <option value="mr">मराठी</option>
+                        <option value="hi">हिंदी</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <button class="btn-primary" id="saveProfileBtn">
+                    <span id="saveProfileLabel">प्रोफाइल सेव्ह करा</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: CROP SELECTION (preserved) ─── -->
+        <div id="view-crop" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="cropBackBtn">←</button>
+                <div class="text-sm text-earth font-medium" id="cropStepLabel">पायरी 1 / 4</div>
+                <div class="ml-auto step-indicator">
+                    <span class="step-dot active"></span>
+                    <span class="step-dot"></span>
+                    <span class="step-dot"></span>
+                    <span class="step-dot"></span>
+                </div>
+            </div>
+            <div class="text-title font-bold mt-1" id="cropHeading">तुमच्याकडे कोणता माल आहे?</div>
+            <div class="crop-grid mt-4" id="cropGrid"></div>
+            <div class="mt-5">
+                <button class="btn-primary" id="cropContinueBtn" disabled>
+                    <span id="cropContinueLabel">पुढे जा</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: QUANTITY (preserved) ─── -->
+        <div id="view-quantity" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="qtyBackBtn">←</button>
+                <div class="text-sm text-earth font-medium" id="qtyStepLabel">पायरी 2 / 4</div>
+                <div class="ml-auto step-indicator">
+                    <span class="step-dot done"></span>
+                    <span class="step-dot active"></span>
+                    <span class="step-dot"></span>
+                    <span class="step-dot"></span>
+                </div>
+            </div>
+            <div class="text-title font-bold mt-1" id="qtyHeading">तुमच्याकडे किती माल आहे?</div>
+            <div class="mt-5 card">
+                <div class="qty-control">
+                    <button class="qty-btn" id="qtyDec">−</button>
+                    <span class="qty-number" id="qtyDisplay">20</span>
+                    <input type="number" id="qtyInput" class="qty-input hidden" value="20" min="1" step="1" />
+                    <button class="qty-btn" id="qtyInc">+</button>
+                </div>
+                <div class="text-center text-sm text-earth font-medium" id="qtyUnitLabel">क्विंटल</div>
+                <div class="qty-quick" id="qtyQuickButtons">
+                    <button data-qty="5">5</button>
+                    <button data-qty="10">10</button>
+                    <button data-qty="20">20</button>
+                    <button data-qty="50">50</button>
+                </div>
+            </div>
+            <div class="mt-4 text-sm text-red-600 hidden" id="qtyError">कृपया मालाची मात्रा भरा.</div>
+            <div class="mt-5">
+                <button class="btn-primary" id="qtyContinueBtn">
+                    <span id="qtyContinueLabel">पुढे जा</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: LOCATION (preserved) ─── -->
+        <div id="view-location" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="locBackBtn">←</button>
+                <div class="text-sm text-earth font-medium" id="locStepLabel">पायरी 3 / 4</div>
+                <div class="ml-auto step-indicator">
+                    <span class="step-dot done"></span>
+                    <span class="step-dot done"></span>
+                    <span class="step-dot active"></span>
+                    <span class="step-dot"></span>
+                </div>
+            </div>
+            <div class="text-title font-bold mt-1" id="locHeading">तुम्ही कुठे आहात?</div>
+            <div class="mt-4">
+                <button class="btn-secondary" id="locUseGps">
+                    <span>📍</span> <span id="locGpsLabel">माझे ठिकाण वापरा</span>
+                </button>
+            </div>
+            <div class="mt-4 text-sm text-earth font-medium" id="locOrLabel">— किंवा जिल्हा निवडा —</div>
+            <div class="location-grid mt-3" id="locationGrid"></div>
+            <div class="mt-5">
+                <button class="btn-primary" id="locContinueBtn" disabled>
+                    <span id="locContinueLabel">पुढे जा</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: MARKET COMPARISON (preserved) ─── -->
+        <div id="view-compare" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="compareBackBtn">←</button>
+                <div class="text-sm text-earth font-medium" id="compareStepLabel">पायरी 4 / 4</div>
+                <div class="ml-auto step-indicator">
+                    <span class="step-dot done"></span>
+                    <span class="step-dot done"></span>
+                    <span class="step-dot done"></span>
+                    <span class="step-dot active"></span>
+                </div>
+            </div>
+            <div id="compareLoading" class="text-center py-10">
+                <div class="text-4xl mb-3">⏳</div>
+                <div class="text-body text-earth" id="compareLoadingText">बाजारांची तुलना होत आहे...</div>
+            </div>
+            <div id="compareResults" class="hidden">
+                <div class="text-title font-bold" id="compareHeading">तुमच्यासाठी चांगला बाजार</div>
+                <div class="mt-3 card card-recommended" id="recommendedCard"></div>
+                <div class="mt-5">
+                    <div class="text-sm font-semibold text-earth mb-2" id="otherMarketsLabel">इतर बाजार</div>
+                    <div class="market-scroll" id="otherMarketsList"></div>
+                </div>
+                <div class="mt-4 disclaimer">
+                    <span id="demoDisclaimerCompare">ही माहिती नमुना (Demo) आहे — प्रत्यक्ष बाजारभाव नाही.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: MARKET DETAILS (preserved, but button changed) ─── -->
+        <div id="view-details" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="detailsBackBtn">←</button>
+                <div class="text-sm text-earth font-medium" id="detailsLabel">बाजार माहिती</div>
+            </div>
+            <div id="detailsContent"></div>
+            <div class="mt-5">
+                <button class="btn-primary" id="detailsOfferBtn">
+                    <span id="detailsOfferLabel">या बाजारात विक्रीची ऑफर द्या</span>
+                </button>
+            </div>
+            <div class="mt-3 disclaimer">
+                <span id="demoDisclaimerDetails">ही माहिती नमुना (Demo) आहे — प्रत्यक्ष बाजारभाव नाही.</span>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: CREATE OFFER ─── -->
+        <div id="view-offer-create" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="offerCreateBackBtn">←</button>
+                <div class="text-title font-bold" id="offerCreateHeading">तुमची विक्री ऑफर तयार करा</div>
+            </div>
+            <div class="card" id="offerCreateCard">
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div><span class="text-earth">पीक:</span> <span class="font-semibold" id="offerCropName">-</span></div>
+                    <div><span class="text-earth">मात्रा:</span> <span class="font-semibold" id="offerQty">-</span></div>
+                    <div><span class="text-earth">बाजार:</span> <span class="font-semibold" id="offerMarket">-</span></div>
+                    <div><span class="text-earth">बाजारभाव:</span> <span class="font-semibold" id="offerMarketPrice">-</span></div>
+                    <div><span class="text-earth">अंदाजे विक्री:</span> <span class="font-semibold" id="offerGross">-</span></div>
+                    <div><span class="text-earth">अंदाजे खर्च:</span> <span class="font-semibold" id="offerCosts">-</span></div>
+                    <div class="col-span-2"><span class="text-earth">अंदाजे मिळणारे:</span> <span class="font-semibold text-green-deep" id="offerNet">-</span></div>
+                </div>
+                <div class="divider"></div>
+                <div class="mb-3">
+                    <label class="text-sm font-medium text-earth" id="offerAskLabel">तुम्हाला किती भाव अपेक्षित आहे? (₹/क्विंटल)</label>
+                    <input type="number" id="offerAskPrice" class="w-full border border-gray-300 rounded-lg p-3 text-lg mt-1" min="1" step="10" />
+                </div>
+                <div class="mb-3">
+                    <label class="text-sm font-medium text-earth" id="offerDateLabel">तुम्ही माल कधी विकू शकता?</label>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <button class="btn-secondary text-sm py-2" data-date="today" id="offerDateToday">आज</button>
+                        <button class="btn-secondary text-sm py-2" data-date="tomorrow" id="offerDateTomorrow">उद्या</button>
+                        <button class="btn-secondary text-sm py-2" data-date="2-3days" id="offerDate2_3">2–3 दिवसांत</button>
+                        <button class="btn-secondary text-sm py-2" data-date="thisweek" id="offerDateWeek">या आठवड्यात</button>
+                    </div>
+                    <input type="hidden" id="offerDateSelected" value="today" />
+                </div>
+                <button class="btn-primary" id="publishOfferBtn">
+                    <span id="publishOfferLabel">ऑफर प्रकाशित करा</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: OFFER PUBLISH SUCCESS ─── -->
+        <div id="view-offer-success" class="view-content hidden-view">
+            <div class="text-center mt-8">
+                <div class="text-6xl">🎉</div>
+                <div class="text-2xl font-bold mt-3" id="successHeading">तुमची विक्री ऑफर प्रकाशित झाली!</div>
+                <div class="card mt-4 text-left" id="successOfferCard"></div>
+                <div class="mt-4 text-sm text-earth" id="successMessage">आता खरेदीदार तुमची ऑफर पाहू शकतात.</div>
+                <div class="mt-5 flex flex-col gap-3">
+                    <button class="btn-primary" id="successViewOfferBtn">
+                        <span id="successViewOfferLabel">माझी ऑफर पहा</span>
+                    </button>
+                    <button class="btn-secondary" id="successHomeBtn">
+                        <span id="successHomeLabel">होमवर जा</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: MY OFFERS ─── -->
+        <div id="view-my-offers" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="myOffersBackBtn">←</button>
+                <div class="text-title font-bold" id="myOffersHeading">माझ्या विक्री ऑफर्स</div>
+            </div>
+            <div id="myOffersList" class="mt-2"></div>
+            <div class="mt-4 text-center text-earth empty-state hidden" id="emptyOffers">
+                <div class="text-4xl">🌾</div>
+                <div class="text-title mt-2" id="emptyOffersText">तुमच्या कोणत्याही विक्री ऑफर्स नाहीत.</div>
+                <button class="btn-outline mt-3" id="emptyCreateOfferBtn">
+                    <span id="emptyCreateOfferLabel">माल विक्रीसाठी ऑफर तयार करा</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: OFFER DETAILS (farmer) ─── -->
+        <div id="view-offer-details" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="offerDetailsBackBtn">←</button>
+                <div class="text-title font-bold" id="offerDetailsHeading">ऑफर तपशील</div>
+            </div>
+            <div id="offerDetailsContent" class="card"></div>
+            <div class="mt-3">
+                <button class="btn-secondary" id="offerDetailsBuyerBtn">
+                    <span id="offerDetailsBuyerLabel">खरेदीदार पहा</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: BUYER OFFERS (buyer preview) ─── -->
+        <div id="view-buyer-offers" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="buyerOffersBackBtn">←</button>
+                <div class="text-title font-bold" id="buyerOffersHeading">उपलब्ध विक्री ऑफर्स</div>
+                <div class="ml-auto text-xs bg-warm px-2 py-1 rounded-full" id="buyerModeBadge">खरेदीदार दृश्य</div>
+            </div>
+            <div id="buyerOffersList" class="mt-2"></div>
+        </div>
+
+        <!-- ─── VIEW: BUYER OFFER DETAILS ─── -->
+        <div id="view-buyer-offer-details" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="buyerOfferDetailsBackBtn">←</button>
+                <div class="text-title font-bold" id="buyerOfferDetailsHeading">ऑफर तपशील</div>
+            </div>
+            <div id="buyerOfferDetailsContent" class="card"></div>
+            <div class="mt-3 flex flex-col gap-3">
+                <button class="btn-primary" id="buyerContactBtn">
+                    <span id="buyerContactLabel">📞 संपर्क करा</span>
+                </button>
+                <button class="btn-secondary" id="buyerTakeOfferBtn">
+                    <span id="buyerTakeOfferLabel">ऑफर घ्या</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── VIEW: TODAY'S PRICES (preserved) ─── -->
+        <div id="view-prices" class="view-content hidden-view">
+            <div class="flex items-center gap-3 mb-2">
+                <button class="text-2xl bg-transparent border-0 cursor-pointer p-1" id="pricesBackBtn">←</button>
+                <div class="text-title font-bold" id="pricesHeading">आजचे बाजारभाव</div>
+            </div>
+            <div class="mt-1 text-sm text-earth" id="pricesSub">तुमच्या परिसरातील बाजारभाव</div>
+            <div class="mt-4" id="pricesList"></div>
+            <div class="mt-4 text-xs text-earth text-center" id="pricesUpdateLabel">शेवटचे अपडेट: आज, 10:30 AM</div>
+            <div class="mt-3 disclaimer">
+                <span id="demoDisclaimerPrices">ही माहिती नमुना (Demo) आहे — प्रत्यक्ष बाजारभाव नाही.</span>
+            </div>
+        </div>
+
+        <!-- ─── BOTTOM NAV ─── -->
+        <nav class="bottom-nav" id="bottomNav">
+            <button data-view="home" class="active">
+                <span class="nav-icon">🏠</span>
+                <span id="navHome">Home</span>
+            </button>
+            <button data-view="crop">
+                <span class="nav-icon">🌾</span>
+                <span id="navMyCrop">माझा माल</span>
+            </button>
+            <button data-view="prices">
+                <span class="nav-icon">💰</span>
+                <span id="navPrices">बाजारभाव</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // DATA
+        // ═══════════════════════════════════════════════════════════════════════
+
+        const CROPS = [
+            { id: 'onion', emoji: '🧅', nameMr: 'कांदा', nameHi: 'प्याज', nameEn: 'Onion' },
+            { id: 'wheat', emoji: '🌾', nameMr: 'गहू', nameHi: 'गेहूँ', nameEn: 'Wheat' },
+            { id: 'soybean', emoji: '🫘', nameMr: 'सोयाबीन', nameHi: 'सोयाबीन', nameEn: 'Soybean' },
+            { id: 'tomato', emoji: '🍅', nameMr: 'टोमॅटो', nameHi: 'टमाटर', nameEn: 'Tomato' },
+            { id: 'maize', emoji: '🌽', nameMr: 'मका', nameHi: 'मक्का', nameEn: 'Maize' }
+        ];
+
+        const LOCATIONS = [
+            { id: 'pune', nameMr: 'पुणे', nameHi: 'पुणे', nameEn: 'Pune' },
+            { id: 'satara', nameMr: 'सातारा', nameHi: 'सातारा', nameEn: 'Satara' },
+            { id: 'solapur', nameMr: 'सोलापूर', nameHi: 'सोलापुर', nameEn: 'Solapur' },
+            { id: 'ahmednagar', nameMr: 'अहमदनगर', nameHi: 'अहमदनगर', nameEn: 'Ahmednagar' },
+            { id: 'nashik', nameMr: 'नाशिक', nameHi: 'नाशिक', nameEn: 'Nashik' }
+        ];
+
+        // Market data (simplified, but kept for compatibility)
+        const MARKETS = [
+            // Onion
+            { id: 'pune-apmc', nameMr: 'पुणे APMC', nameHi: 'पुणे APMC', nameEn: 'Pune APMC', district: 'pune',
+                crop: 'onion', pricePerQuintal: 2350, priceStatus: 'up', distanceKm: 30, transportBaseCost: 400,
+                transportPerQuintal: 40, otherCostsPerQuintal: 15, minQuantity: 0, contact: '020-2445 6789',
+                lastUpdated: '2026-09-08T10:30:00' },
+            { id: 'baramati', nameMr: 'बारामती', nameHi: 'बारामती', nameEn: 'Baramati', district: 'pune', crop: 'onion',
+                pricePerQuintal: 2500, priceStatus: 'up', distanceKm: 100, transportBaseCost: 800,
+                transportPerQuintal: 55, otherCostsPerQuintal: 15, minQuantity: 0, contact: '02112-222 333',
+                lastUpdated: '2026-09-08T10:15:00' },
+            { id: 'solapur-apmc', nameMr: 'सोलापूर APMC', nameHi: 'सोलापुर APMC', nameEn: 'Solapur APMC',
+                district: 'solapur', crop: 'onion', pricePerQuintal: 2650, priceStatus: 'stable', distanceKm: 250,
+                transportBaseCost: 1500, transportPerQuintal: 60, otherCostsPerQuintal: 20, minQuantity: 0,
+                contact: '0217-230 4567', lastUpdated: '2026-09-08T09:45:00' },
+            { id: 'nashik-apmc', nameMr: 'नाशिक APMC', nameHi: 'नाशिक APMC', nameEn: 'Nashik APMC', district: 'nashik',
+                crop: 'onion', pricePerQuintal: 2400, priceStatus: 'down', distanceKm: 200, transportBaseCost: 1200,
+                transportPerQuintal: 50, otherCostsPerQuintal: 15, minQuantity: 0, contact: '0253-257 8901',
+                lastUpdated: '2026-09-08T10:00:00' },
+            { id: 'satara-apmc', nameMr: 'सातारा APMC', nameHi: 'सातारा APMC', nameEn: 'Satara APMC', district: 'satara',
+                crop: 'onion', pricePerQuintal: 2300, priceStatus: 'stable', distanceKm: 120, transportBaseCost: 700,
+                transportPerQuintal: 45, otherCostsPerQuintal: 12, minQuantity: 0, contact: '02162-234 567',
+                lastUpdated: '2026-09-08T09:30:00' },
+            // Wheat
+            { id: 'pune-apmc-wheat', nameMr: 'पुणे APMC', nameHi: 'पुणे APMC', nameEn: 'Pune APMC', district: 'pune',
+                crop: 'wheat', pricePerQuintal: 2450, priceStatus: 'stable', distanceKm: 30, transportBaseCost: 400,
+                transportPerQuintal: 40, otherCostsPerQuintal: 12, minQuantity: 0, contact: '020-2445 6789',
+                lastUpdated: '2026-09-08T10:30:00' },
+            { id: 'baramati-wheat', nameMr: 'बारामती', nameHi: 'बारामती', nameEn: 'Baramati', district: 'pune',
+                crop: 'wheat', pricePerQuintal: 2400, priceStatus: 'down', distanceKm: 100, transportBaseCost: 800,
+                transportPerQuintal: 55, otherCostsPerQuintal: 12, minQuantity: 0, contact: '02112-222 333',
+                lastUpdated: '2026-09-08T10:15:00' },
+            { id: 'solapur-apmc-wheat', nameMr: 'सोलापूर APMC', nameHi: 'सोलापुर APMC', nameEn: 'Solapur APMC',
+                district: 'solapur', crop: 'wheat', pricePerQuintal: 2500, priceStatus: 'up', distanceKm: 250,
+                transportBaseCost: 1500, transportPerQuintal: 60, otherCostsPerQuintal: 15, minQuantity: 0,
+                contact: '0217-230 4567', lastUpdated: '2026-09-08T09:45:00' },
+            // Soybean
+            { id: 'pune-apmc-soybean', nameMr: 'पुणे APMC', nameHi: 'पुणे APMC', nameEn: 'Pune APMC', district: 'pune',
+                crop: 'soybean', pricePerQuintal: 5100, priceStatus: 'up', distanceKm: 30, transportBaseCost: 400,
+                transportPerQuintal: 40, otherCostsPerQuintal: 20, minQuantity: 0, contact: '020-2445 6789',
+                lastUpdated: '2026-09-08T10:30:00' },
+            { id: 'baramati-soybean', nameMr: 'बारामती', nameHi: 'बारामती', nameEn: 'Baramati', district: 'pune',
+                crop: 'soybean', pricePerQuintal: 5200, priceStatus: 'up', distanceKm: 100, transportBaseCost: 800,
+                transportPerQuintal: 55, otherCostsPerQuintal: 20, minQuantity: 0, contact: '02112-222 333',
+                lastUpdated: '2026-09-08T10:15:00' },
+            // Tomato
+            { id: 'pune-apmc-tomato', nameMr: 'पुणे APMC', nameHi: 'पुणे APMC', nameEn: 'Pune APMC', district: 'pune',
+                crop: 'tomato', pricePerQuintal: 1800, priceStatus: 'down', distanceKm: 30, transportBaseCost: 400,
+                transportPerQuintal: 40, otherCostsPerQuintal: 10, minQuantity: 0, contact: '020-2445 6789',
+                lastUpdated: '2026-09-08T10:30:00' },
+            { id: 'baramati-tomato', nameMr: 'बारामती', nameHi: 'बारामती', nameEn: 'Baramati', district: 'pune',
+                crop: 'tomato', pricePerQuintal: 1900, priceStatus: 'stable', distanceKm: 100, transportBaseCost: 800,
+                transportPerQuintal: 55, otherCostsPerQuintal: 10, minQuantity: 0, contact: '02112-222 333',
+                lastUpdated: '2026-09-08T10:15:00' },
+            // Maize
+            { id: 'pune-apmc-maize', nameMr: 'पुणे APMC', nameHi: 'पुणे APMC', nameEn: 'Pune APMC', district: 'pune',
+                crop: 'maize', pricePerQuintal: 2200, priceStatus: 'stable', distanceKm: 30, transportBaseCost: 400,
+                transportPerQuintal: 40, otherCostsPerQuintal: 12, minQuantity: 0, contact: '020-2445 6789',
+                lastUpdated: '2026-09-08T10:30:00' },
+            { id: 'baramati-maize', nameMr: 'बारामती', nameHi: 'बारामती', nameEn: 'Baramati', district: 'pune',
+                crop: 'maize', pricePerQuintal: 2150, priceStatus: 'down', distanceKm: 100, transportBaseCost: 800,
+                transportPerQuintal: 55, otherCostsPerQuintal: 12, minQuantity: 0, contact: '02112-222 333',
+                lastUpdated: '2026-09-08T10:15:00' },
+        ];
+
+        // ─── TRANSLATIONS ───
+        const T = {
+            mr: {
+                tagline: 'योग्य बाजार, योग्य भाव, योग्य निर्णय.',
+                loginHeading: 'Kisan-Net मध्ये स्वागत आहे',
+                loginMobile: 'मोबाइल नंबर',
+                loginPassword: 'पासवर्ड',
+                loginBtn: 'लॉग इन करा',
+                loginSignup: 'नवीन शेतकरी? खाते तयार करा',
+                loginDemo: 'Demo: कोणत्याही मोबाइल नंबरने लॉग इन करा.',
+                homeGreeting: 'नमस्कार, {name}! 👋',
+                homeQuestion: 'आज काय विकायचे आहे?',
+                btnSell: 'माझा माल विकायचा आहे',
+                todayPrices: 'आजचे बाजारभाव',
+                myOffers: 'माझ्या ऑफर्स',
+                viewOffers: 'ऑफर्स पहा',
+                demoDisclaimer: 'ही माहिती नमुना (Demo) आहे — प्रत्यक्ष बाजारभाव नाही.',
+                cropHeading: 'तुमच्याकडे कोणता माल आहे?',
+                cropContinue: 'पुढे जा',
+                qtyHeading: 'तुमच्याकडे किती माल आहे?',
+                qtyUnit: 'क्विंटल',
+                qtyError: 'कृपया मालाची मात्रा भरा.',
+                qtyContinue: 'पुढे जा',
+                locHeading: 'तुम्ही कुठे आहात?',
+                locGps: 'माझे ठिकाण वापरा',
+                locOr: '— किंवा जिल्हा निवडा —',
+                locContinue: 'पुढे जा',
+                compareHeading: 'तुमच्यासाठी चांगला बाजार',
+                compareLoading: 'बाजारांची तुलना होत आहे...',
+                otherMarkets: 'इतर बाजार',
+                recommendedBadge: '⭐ तुमच्यासाठी चांगला पर्याय',
+                netAfterCost: 'खर्च वजा केल्यानंतर',
+                transport: 'वाहतूक',
+                otherCosts: 'इतर खर्च',
+                grossAmount: 'एकूण विक्री',
+                chooseMarket: 'या बाजारात विक्रीची ऑफर द्या',
+                detailsLabel: 'बाजार माहिती',
+                detailsOffer: 'या बाजारात विक्रीची ऑफर द्या',
+                perQuintal: '/ क्विंटल',
+                km: 'किमी',
+                reasonBetter: 'कारण:',
+                reasonPrice: '✓ चांगला भाव',
+                reasonDistance: '✓ जवळचे अंतर',
+                reasonTransport: '✓ वाहतूक खर्च कमी',
+                reasonNet: '✓ खर्च वजा केल्यानंतर जास्त पैसे',
+                unavailable: '🔒 उपलब्ध नाही',
+                minQtyReq: 'या बाजारासाठी किमान {min} क्विंटल माल आवश्यक आहे.',
+                // offer create
+                offerCreateHeading: 'तुमची विक्री ऑफर तयार करा',
+                offerCrop: 'पीक',
+                offerQty: 'मात्रा',
+                offerMarket: 'बाजार',
+                offerMarketPrice: 'बाजारभाव',
+                offerGross: 'अंदाजे विक्री',
+                offerCosts: 'अंदाजे खर्च',
+                offerNet: 'अंदाजे मिळणारे',
+                offerAsk: 'तुम्हाला किती भाव अपेक्षित आहे? (₹/क्विंटल)',
+                offerDate: 'तुम्ही माल कधी विकू शकता?',
+                offerToday: 'आज',
+                offerTomorrow: 'उद्या',
+                offer2_3: '2–3 दिवसांत',
+                offerWeek: 'या आठवड्यात',
+                publishOffer: 'ऑफर प्रकाशित करा',
+                // success
+                successHeading: 'तुमची विक्री ऑफर प्रकाशित झाली!',
+                successMessage: 'आता खरेदीदार तुमची ऑफर पाहू शकतात.',
+                successViewOffer: 'माझी ऑफर पहा',
+                successHome: 'होमवर जा',
+                // my offers
+                myOffersHeading: 'माझ्या विक्री ऑफर्स',
+                emptyOffers: 'तुमच्या कोणत्याही विक्री ऑफर्स नाहीत.',
+                emptyCreateOffer: 'माल विक्रीसाठी ऑफर तयार करा',
+                // offer details
+                offerDetailsHeading: 'ऑफर तपशील',
+                buyerView: 'खरेदीदार पहा',
+                statusActive: '🟢 सक्रिय',
+                statusInterested: '🟡 खरेदीदाराची रुची',
+                statusSold: '🔵 विकले',
+                // buyer
+                buyerOffersHeading: 'उपलब्ध विक्री ऑफर्स',
+                buyerMode: 'खरेदीदार दृश्य',
+                buyerContact: '📞 संपर्क करा',
+                buyerTakeOffer: 'ऑफर घ्या',
+                buyerContactMsg: 'Demo contact: 98XXXXXX90',
+                buyerOfferTaken: 'ऑफर घेतली गेली! खरेदीदार तुमच्याशी संपर्क साधेल.',
+                // profile
+                profileHeading: 'माझे प्रोफाइल',
+                editProfile: 'प्रोफाइल संपादित करा',
+                logout: 'लॉगआउट',
+                editProfileHeading: 'प्रोफाइल संपादित करा',
+                saveProfile: 'प्रोफाइल सेव्ह करा',
+                navHome: 'Home',
+                navMyCrop: 'माझा माल',
+                navPrices: 'बाजारभाव',
+                step1: 'माल',
+                step2: 'मात्रा',
+                step3: 'ठिकाण',
+                step4: 'बाजार',
+                back: 'मागे',
+                priceUp: '📈 वाढत आहे',
+                priceDown: '📉 कमी होत आहे',
+                priceStable: '→ स्थिर',
+                pricesHeading: 'आजचे बाजारभाव',
+                pricesSub: 'तुमच्या परिसरातील बाजारभाव',
+                pricesUpdate: 'शेवटचे अपडेट: आज, 10:30 AM',
+                noMarkets: 'या मालासाठी कोणतेही बाजार उपलब्ध नाहीत.',
+                confirmTitle: '✅ निवड पूर्ण',
+                confirmMsg: 'तुम्ही {name} बाजार निवडला आहे. लवकरच तुम्हाला पुढील माहिती मिळेल.',
+                notificationTitle: 'नवीन रुची',
+                notificationMsg: 'राज ट्रेडर्सना तुमच्या {crop} ऑफरमध्ये रस आहे.',
+                notificationOffer: 'ऑफर पहा',
+            },
+            hi: {
+                tagline: 'सही बाजार, सही भाव, सही निर्णय।',
+                loginHeading: 'Kisan-Net में स्वागत है',
+                loginMobile: 'मोबाइल नंबर',
+                loginPassword: 'पासवर्ड',
+                loginBtn: 'लॉग इन करें',
+                loginSignup: 'नए किसान? खाता बनाएं',
+                loginDemo: 'Demo: किसी भी मोबाइल नंबर से लॉग इन करें।',
+                homeGreeting: 'नमस्ते, {name}! 👋',
+                homeQuestion: 'आज क्या बेचना है?',
+                btnSell: 'मेरा माल बेचना है',
+                todayPrices: 'आज के बाजार भाव',
+                myOffers: 'मेरे ऑफर',
+                viewOffers: 'ऑफर देखें',
+                demoDisclaimer: 'यह जानकारी नमूना (Demo) है — वास्तविक बाजार भाव नहीं।',
+                cropHeading: 'आपके पास कौन सा माल है?',
+                cropContinue: 'आगे बढ़ें',
+                qtyHeading: 'आपके पास कितना माल है?',
+                qtyUnit: 'क्विंटल',
+                qtyError: 'कृपया माल की मात्रा भरें।',
+                qtyContinue: 'आगे बढ़ें',
+                locHeading: 'आप कहाँ हैं?',
+                locGps: 'मेरा स्थान उपयोग करें',
+                locOr: '— या जिला चुनें —',
+                locContinue: 'आगे बढ़ें',
+                compareHeading: 'आपके लिए अच्छा बाजार',
+                compareLoading: 'बाजारों की तुलना हो रही है...',
+                otherMarkets: 'अन्य बाजार',
+                recommendedBadge: '⭐ आपके लिए अच्छा विकल्प',
+                netAfterCost: 'खर्च घटाने के बाद',
+                transport: 'परिवहन',
+                otherCosts: 'अन्य खर्च',
+                grossAmount: 'कुल बिक्री',
+                chooseMarket: 'इस बाजार में बिक्री का ऑफर दें',
+                detailsLabel: 'बाजार जानकारी',
+                detailsOffer: 'इस बाजार में बिक्री का ऑफर दें',
+                perQuintal: '/ क्विंटल',
+                km: 'किमी',
+                reasonBetter: 'कारण:',
+                reasonPrice: '✓ अच्छा भाव',
+                reasonDistance: '✓ निकट दूरी',
+                reasonTransport: '✓ परिवहन खर्च कम',
+                reasonNet: '✓ खर्च घटाने के बाद अधिक पैसे',
+                unavailable: '🔒 उपलब्ध नहीं',
+                minQtyReq: 'इस बाजार के लिए कम से कम {min} क्विंटल माल आवश्यक है।',
+                offerCreateHeading: 'अपनी बिक्री ऑफर तैयार करें',
+                offerCrop: 'फसल',
+                offerQty: 'मात्रा',
+                offerMarket: 'बाजार',
+                offerMarketPrice: 'बाजार भाव',
+                offerGross: 'अनुमानित बिक्री',
+                offerCosts: 'अनुमानित खर्च',
+                offerNet: 'अनुमानित प्राप्ति',
+                offerAsk: 'आपको कितना भाव चाहिए? (₹/क्विंटल)',
+                offerDate: 'माल कब बेच सकते हैं?',
+                offerToday: 'आज',
+                offerTomorrow: 'कल',
+                offer2_3: '2–3 दिनों में',
+                offerWeek: 'इस सप्ताह',
+                publishOffer: 'ऑफर प्रकाशित करें',
+                successHeading: 'आपकी बिक्री ऑफर प्रकाशित हो गई!',
+                successMessage: 'अब खरीदार आपका ऑफर देख सकते हैं।',
+                successViewOffer: 'मेरा ऑफर देखें',
+                successHome: 'होम पर जाएं',
+                myOffersHeading: 'मेरी बिक्री ऑफर्स',
+                emptyOffers: 'आपकी कोई बिक्री ऑफर नहीं है।',
+                emptyCreateOffer: 'बिक्री के लिए ऑफर बनाएं',
+                offerDetailsHeading: 'ऑफर विवरण',
+                buyerView: 'खरीदार देखें',
+                statusActive: '🟢 सक्रिय',
+                statusInterested: '🟡 खरीदार की रुचि',
+                statusSold: '🔵 बिक गया',
+                buyerOffersHeading: 'उपलब्ध बिक्री ऑफर्स',
+                buyerMode: 'खरीदार दृश्य',
+                buyerContact: '📞 संपर्क करें',
+                buyerTakeOffer: 'ऑफर लें',
+                buyerContactMsg: 'Demo contact: 98XXXXXX90',
+                buyerOfferTaken: 'ऑफर ले ली गई! खरीदार आपसे संपर्क करेगा।',
+                profileHeading: 'मेरा प्रोफाइल',
+                editProfile: 'प्रोफाइल संपादित करें',
+                logout: 'लॉगआउट',
+                editProfileHeading: 'प्रोफाइल संपादित करें',
+                saveProfile: 'प्रोफाइल सेव करें',
+                navHome: 'Home',
+                navMyCrop: 'मेरा माल',
+                navPrices: 'बाजार भाव',
+                step1: 'माल',
+                step2: 'मात्रा',
+                step3: 'स्थान',
+                step4: 'बाजार',
+                back: 'पीछे',
+                priceUp: '📈 बढ़ रहा है',
+                priceDown: '📉 घट रहा है',
+                priceStable: '→ स्थिर',
+                pricesHeading: 'आज के बाजार भाव',
+                pricesSub: 'अपने इलाके के बाजार भाव',
+                pricesUpdate: 'अंतिम अपडेट: आज, 10:30 AM',
+                noMarkets: 'इस माल के लिए कोई बाजार उपलब्ध नहीं।',
+                confirmTitle: '✅ चयन पूर्ण',
+                confirmMsg: 'आपने {name} बाजार चुना है। जल्द ही आपको आगे की जानकारी मिलेगी।',
+                notificationTitle: 'नई रुचि',
+                notificationMsg: 'राज ट्रेडर्स को आपके {crop} ऑफर में रुचि है।',
+                notificationOffer: 'ऑफर देखें',
+            },
+            en: {
+                tagline: 'Better market. Better price. Better decision.',
+                loginHeading: 'Welcome to Kisan-Net',
+                loginMobile: 'Mobile Number',
+                loginPassword: 'Password',
+                loginBtn: 'Login',
+                loginSignup: 'New farmer? Create account',
+                loginDemo: 'Demo: Login with any mobile number.',
+                homeGreeting: 'Hello, {name}! 👋',
+                homeQuestion: 'What do you want to sell today?',
+                btnSell: 'I want to sell my produce',
+                todayPrices: "Today's Market Prices",
+                myOffers: 'My Offers',
+                viewOffers: 'View Offers',
+                demoDisclaimer: 'This is demo data — not actual market prices.',
+                cropHeading: 'Which produce do you have?',
+                cropContinue: 'Continue',
+                qtyHeading: 'How much produce do you have?',
+                qtyUnit: 'Quintals',
+                qtyError: 'Please enter the quantity.',
+                qtyContinue: 'Continue',
+                locHeading: 'Where are you?',
+                locGps: 'Use my location',
+                locOr: '— Or select district —',
+                locContinue: 'Continue',
+                compareHeading: 'Best market for you',
+                compareLoading: 'Comparing markets...',
+                otherMarkets: 'Other markets',
+                recommendedBadge: '⭐ Best option for you',
+                netAfterCost: 'After expenses',
+                transport: 'Transport',
+                otherCosts: 'Other costs',
+                grossAmount: 'Total sale',
+                chooseMarket: 'Create selling offer at this market',
+                detailsLabel: 'Market Details',
+                detailsOffer: 'Create selling offer at this market',
+                perQuintal: '/ quintal',
+                km: 'km',
+                reasonBetter: 'Why:',
+                reasonPrice: '✓ Good price',
+                reasonDistance: '✓ Close distance',
+                reasonTransport: '✓ Low transport cost',
+                reasonNet: '✓ Higher net amount after costs',
+                unavailable: '🔒 Not available',
+                minQtyReq: 'This market requires a minimum of {min} quintals.',
+                offerCreateHeading: 'Create your selling offer',
+                offerCrop: 'Crop',
+                offerQty: 'Quantity',
+                offerMarket: 'Market',
+                offerMarketPrice: 'Market price',
+                offerGross: 'Estimated sale',
+                offerCosts: 'Estimated costs',
+                offerNet: 'Estimated net',
+                offerAsk: 'What price do you expect? (₹/quintal)',
+                offerDate: 'When can you sell?',
+                offerToday: 'Today',
+                offerTomorrow: 'Tomorrow',
+                offer2_3: 'In 2–3 days',
+                offerWeek: 'This week',
+                publishOffer: 'Publish Offer',
+                successHeading: 'Your selling offer has been published!',
+                successMessage: 'Buyers can now see your offer.',
+                successViewOffer: 'View My Offer',
+                successHome: 'Go to Home',
+                myOffersHeading: 'My Selling Offers',
+                emptyOffers: 'You have no selling offers yet.',
+                emptyCreateOffer: 'Create an offer to sell',
+                offerDetailsHeading: 'Offer Details',
+                buyerView: 'View Buyers',
+                statusActive: '🟢 Active',
+                statusInterested: '🟡 Buyer Interested',
+                statusSold: '🔵 Sold',
+                buyerOffersHeading: 'Available Selling Offers',
+                buyerMode: 'Buyer View',
+                buyerContact: '📞 Contact',
+                buyerTakeOffer: 'Take Offer',
+                buyerContactMsg: 'Demo contact: 98XXXXXX90',
+                buyerOfferTaken: 'Offer taken! The buyer will contact you.',
+                profileHeading: 'My Profile',
+                editProfile: 'Edit Profile',
+                logout: 'Logout',
+                editProfileHeading: 'Edit Profile',
+                saveProfile: 'Save Profile',
+                navHome: 'Home',
+                navMyCrop: 'My Produce',
+                navPrices: 'Prices',
+                step1: 'Crop',
+                step2: 'Qty',
+                step3: 'Location',
+                step4: 'Market',
+                back: 'Back',
+                priceUp: '📈 Rising',
+                priceDown: '📉 Falling',
+                priceStable: '→ Stable',
+                pricesHeading: "Today's Market Prices",
+                pricesSub: 'Market prices in your area',
+                pricesUpdate: 'Last updated: Today, 10:30 AM',
+                noMarkets: 'No markets available for this produce.',
+                confirmTitle: '✅ Selection complete',
+                confirmMsg: 'You have selected {name} market. You will receive further information shortly.',
+                notificationTitle: 'New interest',
+                notificationMsg: 'Raj Traders is interested in your {crop} offer.',
+                notificationOffer: 'View Offer',
+            }
+        };
+
+        // ─── HELPERS ───
+        function getLang() { return state.lang; }
+
+        function t(key, vars) {
+            let str = T[state.lang]?.[key] || T.mr[key] || key;
+            if (vars) {
+                for (const [k, v] of Object.entries(vars)) {
+                    str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+                }
+            }
+            return str;
+        }
+
+        function getCropName(cropId) {
+            const c = CROPS.find(x => x.id === cropId);
+            if (!c) return cropId;
+            return c[`name${state.lang === 'mr' ? 'Mr' : state.lang === 'hi' ? 'Hi' : 'En'}`] || c.nameEn;
+        }
+
+        function getLocationName(locId) {
+            const l = LOCATIONS.find(x => x.id === locId);
+            if (!l) return locId;
+            return l[`name${state.lang === 'mr' ? 'Mr' : state.lang === 'hi' ? 'Hi' : 'En'}`] || l.nameEn;
+        }
+
+        function getMarketName(m) {
+            return m[`name${state.lang === 'mr' ? 'Mr' : state.lang === 'hi' ? 'Hi' : 'En'}`] || m.nameEn;
+        }
+
+        function getStatusLabel(status) {
+            const map = {
+                'active': t('statusActive'),
+                'interested': t('statusInterested'),
+                'sold': t('statusSold'),
+            };
+            return map[status] || status;
+        }
+
+        // ─── STATE ───
+        const state = {
+            lang: 'mr',
+            isLoggedIn: false,
+            farmer: { name: 'रमेश पाटील', village: 'वाघोली', district: 'pune', phone: '9876543210', language: 'mr' },
+            selectedCrop: null,
+            quantity: 20,
+            selectedLocation: null,
+            selectedMarket: null,
+            // offer creation prefill
+            offerPrefill: null,
+            // offers array
+            offers: [],
+            // current viewed offer id
+            currentOfferId: null,
+            // buyer mode
+            buyerMode: false,
+        };
+
+        // ─── localStorage persistence ───
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('kisanNetState');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    Object.assign(state, parsed);
+                }
+                // ensure offers array
+                if (!state.offers) state.offers = [];
+                // if no offers, seed demo offers
+                if (state.offers.length === 0) {
+                    seedDemoOffers();
+                }
+            } catch (e) {
+                seedDemoOffers();
+            }
+        }
+
+        function saveState() {
+            try {
+                const toStore = { ...state };
+                localStorage.setItem('kisanNetState', JSON.stringify(toStore));
+            } catch (e) { /* ignore */ }
+        }
+        // ─── UPDATE NAVIGATION LABELS ───
+function updateNavLabels() {
+  document.getElementById('navHome').textContent = t('navHome');
+  document.getElementById('navMyCrop').textContent = t('navMyCrop');
+  document.getElementById('navPrices').textContent = t('navPrices');
+}
+        // ─── LANGUAGE SWITCHING ───
+function changeLanguage(lang) {
+  if (state.lang === lang) return;
+  state.lang = lang;
+  state.farmer.language = lang;
+  saveState();
+
+  // Update both dropdowns to reflect the new language
+  document.getElementById('homeLangSelect').value = lang;
+  document.getElementById('profileLangSelect').value = lang;
+
+  // Re‑render the current view with new language
+  const current = getCurrentView();
+  // Map view names to render functions (navigateTo handles this)
+  navigateTo(current);
+  // Update bottom nav labels
+  updateNavLabels();
+}
+
+        function seedDemoOffers() {
+            const now = new Date().toISOString();
+            state.offers = [{
+                id: 'offer1',
+                farmerId: 'farmer1',
+                farmerName: 'रमेश पाटील',
+                crop: 'onion',
+                quantity: 20,
+                unit: 'quintal',
+                market: 'pune-apmc',
+                district: 'pune',
+                askingPricePerQuintal: 2400,
+                marketPricePerQuintal: 2350,
+                estimatedGrossAmount: 47000,
+                estimatedTransportCost: 1200,
+                estimatedOtherCosts: 300,
+                estimatedNetAmount: 45500,
+                availableDate: 'today',
+                status: 'active',
+                createdAt: now
+            }, {
+                id: 'offer2',
+                farmerId: 'farmer1',
+                farmerName: 'रमेश पाटील',
+                crop: 'wheat',
+                quantity: 10,
+                unit: 'quintal',
+                market: 'baramati',
+                district: 'pune',
+                askingPricePerQuintal: 2500,
+                marketPricePerQuintal: 2400,
+                estimatedGrossAmount: 25000,
+                estimatedTransportCost: 800,
+                estimatedOtherCosts: 120,
+                estimatedNetAmount: 24080,
+                availableDate: 'tomorrow',
+                status: 'active',
+                createdAt: now
+            }, {
+                id: 'offer3',
+                farmerId: 'farmer2',
+                farmerName: 'सुरेश शिंदे',
+                crop: 'onion',
+                quantity: 50,
+                unit: 'quintal',
+                market: 'baramati',
+                district: 'pune',
+                askingPricePerQuintal: 2450,
+                marketPricePerQuintal: 2500,
+                estimatedGrossAmount: 125000,
+                estimatedTransportCost: 800 + 55 * 50,
+                estimatedOtherCosts: 15 * 50,
+                estimatedNetAmount: 125000 - (800 + 2750) - 750,
+                availableDate: '2-3days',
+                status: 'active',
+                createdAt: now
+            }];
+            // set first offer as interested for demo
+            state.offers[0].status = 'interested';
+            saveState();
+        }
+
+        // ─── MARKET CALCULATIONS (preserved) ───
+        function calcMarket(market, quantity) {
+            const gross = market.pricePerQuintal * quantity;
+            const transport = market.transportBaseCost + (market.transportPerQuintal * quantity);
+            const other = market.otherCostsPerQuintal * quantity;
+            const net = gross - transport - other;
+            return { gross, transport, other, net };
+        }
+
+        function getMarketsForCrop(cropId, locationId) {
+            let markets = MARKETS.filter(m => m.crop === cropId);
+            if (locationId) {
+                markets = markets.sort((a, b) => {
+                    const aDist = a.district === locationId ? 0 : a.distanceKm;
+                    const bDist = b.district === locationId ? 0 : b.distanceKm;
+                    return aDist - bDist;
+                });
+            }
+            return markets;
+        }
+
+        function getRecommendedMarket(markets, quantity) {
+            if (markets.length === 0) return null;
+            const withNet = markets.map(m => ({
+                market: m,
+                ...calcMarket(m, quantity),
+                minQtyOk: quantity >= (m.minQuantity || 0)
+            }));
+            const available = withNet.filter(w => w.minQtyOk);
+            if (available.length === 0) {
+                const sorted = withNet.sort((a, b) => b.net - a.net);
+                return { ...sorted[0], unavailable: true };
+            }
+            const sorted = available.sort((a, b) => b.net - a.net);
+            if (sorted.length >= 2) {
+                const top = sorted[0];
+                const second = sorted[1];
+                const diff = Math.abs(top.net - second.net);
+                const pct = diff / top.net;
+                if (pct < 0.02) {
+                    const closer = top.market.distanceKm <= second.market.distanceKm ? top : second;
+                    return { ...closer, unavailable: false };
+                }
+            }
+            return { ...sorted[0], unavailable: false };
+        }
+
+        function rankMarkets(markets, quantity) {
+            return markets.map(m => ({
+                market: m,
+                ...calcMarket(m, quantity),
+                minQtyOk: quantity >= (m.minQuantity || 0)
+            })).sort((a, b) => b.net - a.net);
+        }
+
+        function generateReason(market, rankData) {
+            const reasons = [];
+            if (rankData && rankData.net > 0) reasons.push(t('reasonNet'));
+            if (market.priceStatus === 'up') reasons.push(t('reasonPrice'));
+            if (market.distanceKm < 60) reasons.push(t('reasonDistance'));
+            if (rankData && rankData.transport < 2000) reasons.push(t('reasonTransport'));
+            if (reasons.length === 0) reasons.push(t('reasonPrice'));
+            return reasons.slice(0, 3);
+        }
+
+        // ─── UI HELPERS ───
+        function showView(viewId) {
+            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden-view'));
+            const target = document.getElementById(`view-${viewId}`);
+            if (target) target.classList.remove('hidden-view');
+            // update nav
+            document.querySelectorAll('#bottomNav button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === viewId);
+            });
+            // hide bottom nav on login, buyer views, etc.
+            const hideNav = ['login', 'buyer-offers', 'buyer-offer-details'].includes(viewId);
+            document.getElementById('bottomNav').style.display = hideNav ? 'none' : 'flex';
+        }
+
+        function showToast(msg, type) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'success' ? 'toast-success' : type === 'error' ? 'toast-error' : ''}`;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-12px)';
+                toast.style.transition = 'opacity 0.25s, transform 0.25s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2800);
+        }
+
+        function getCurrentView() {
+            for (const el of document.querySelectorAll('.view-content')) {
+                if (!el.classList.contains('hidden-view')) {
+                    return el.id.replace('view-', '');
+                }
+            }
+            return 'login';
+        }
+
+        // ─── RENDER FUNCTIONS ───
+
+        // Login
+        function renderLogin() {
+            const lang = state.lang;
+            document.getElementById('loginTagline').textContent = t('tagline');
+            document.getElementById('loginHeading').textContent = t('loginHeading');
+            document.getElementById('loginMobileLabel').textContent = t('loginMobile');
+            document.getElementById('loginPasswordLabel').textContent = t('loginPassword');
+            document.getElementById('loginBtnLabel').textContent = t('loginBtn');
+            document.getElementById('loginSignupHint').textContent = t('loginSignup');
+            document.getElementById('loginDemoHint').textContent = t('loginDemo');
+            showView('login');
+        }
+
+        // Home
+        function renderHome() {
+            const lang = state.lang;
+            const farmer = state.farmer;
+            document.getElementById('homeGreeting').textContent = t('homeGreeting', { name: farmer.name });
+            document.getElementById('homeQuestion').textContent = t('homeQuestion');
+            document.getElementById('btnSellLabel').textContent = t('btnSell');
+            document.getElementById('todayPricesLabel').textContent = t('todayPrices');
+            document.getElementById('myOffersTitle').textContent = t('myOffers');
+            document.getElementById('viewOffersLabel').textContent = t('viewOffers');
+            document.getElementById('demoDisclaimerHome').textContent = t('demoDisclaimer');
+
+            // count active offers
+            const active = state.offers.filter(o => o.farmerId === 'farmer1' && o.status !== 'sold').length;
+            document.getElementById('offersCount').textContent = active;
+
+            // notification badge
+            const interested = state.offers.filter(o => o.farmerId === 'farmer1' && o.status === 'interested').length;
+            const badge = document.getElementById('notifBadge');
+            if (interested > 0) {
+                badge.textContent = interested;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            showView('home');
+        }
+
+        // Profile
+        function renderProfile() {
+            const f = state.farmer;
+            document.getElementById('profileHeading').textContent = t('profileHeading');
+            document.getElementById('profileName').textContent = f.name;
+            document.getElementById('profileVillage').textContent = `${f.village}, ${getLocationName(f.district)}`;
+            document.getElementById('profilePhone').textContent = f.phone;
+            const active = state.offers.filter(o => o.farmerId === 'farmer1' && o.status !== 'sold').length;
+            document.getElementById('profileOffers').textContent = `${active} ${t('myOffers')}`;
+            document.getElementById('editProfileLabel').textContent = t('editProfile');
+            document.getElementById('logoutLabel').textContent = t('logout');
+            showView('profile');
+        }
+
+        // Edit Profile
+        function renderEditProfile() {
+            const f = state.farmer;
+            document.getElementById('editProfileHeading').textContent = t('editProfileHeading');
+            document.getElementById('editNameLabel').textContent = 'नाव';
+            document.getElementById('editVillageLabel').textContent = 'गाव';
+            document.getElementById('editDistrictLabel').textContent = 'जिल्हा';
+            document.getElementById('editLangLabel').textContent = 'भाषा';
+            document.getElementById('saveProfileLabel').textContent = t('saveProfile');
+
+            document.getElementById('editName').value = f.name;
+            document.getElementById('editVillage').value = f.village;
+            document.getElementById('editDistrict').value = f.district;
+            document.getElementById('editLang').value = f.language || 'mr';
+            showView('edit-profile');
+        }
+
+        // Crop selection (preserved, but remove "other")
+        function renderCropSelection() {
+            const lang = state.lang;
+            document.getElementById('cropStepLabel').textContent = `${t('step1')} 1 / 4`;
+            document.getElementById('cropHeading').textContent = t('cropHeading');
+            document.getElementById('cropContinueLabel').textContent = t('cropContinue');
+
+            const grid = document.getElementById('cropGrid');
+            grid.innerHTML = '';
+            CROPS.forEach(crop => {
+                const name = crop[`name${lang === 'mr' ? 'Mr' : lang === 'hi' ? 'Hi' : 'En'}`] || crop.nameEn;
+                const div = document.createElement('div');
+                div.className = `crop-card ${state.selectedCrop === crop.id ? 'selected' : ''}`;
+                div.dataset.crop = crop.id;
+                div.setAttribute('role', 'button');
+                div.setAttribute('tabindex', '0');
+                div.innerHTML = `<span class="crop-icon">${crop.emoji}</span><span class="crop-name">${name}</span>`;
+                div.addEventListener('click', () => {
+                    state.selectedCrop = crop.id;
+                    document.querySelectorAll('#cropGrid .crop-card').forEach(el => {
+                        el.classList.toggle('selected', el.dataset.crop === crop.id);
+                    });
+                    document.getElementById('cropContinueBtn').disabled = false;
+                });
+                grid.appendChild(div);
+            });
+            document.getElementById('cropContinueBtn').disabled = !state.selectedCrop;
+            showView('crop');
+        }
+
+        // Quantity (preserved)
+        function renderQuantity() {
+            const lang = state.lang;
+            document.getElementById('qtyStepLabel').textContent = `${t('step2')} 2 / 4`;
+            document.getElementById('qtyHeading').textContent = t('qtyHeading');
+            document.getElementById('qtyUnitLabel').textContent = t('qtyUnit');
+            document.getElementById('qtyContinueLabel').textContent = t('qtyContinue');
+            document.getElementById('qtyError').classList.add('hidden');
+
+            const display = document.getElementById('qtyDisplay');
+            const input = document.getElementById('qtyInput');
+            display.textContent = state.quantity;
+            input.value = state.quantity;
+
+            document.querySelectorAll('#qtyQuickButtons button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const val = parseInt(btn.dataset.qty, 10);
+                    setQuantity(val);
+                });
+            });
+            document.getElementById('qtyDec').addEventListener('click', () => setQuantity(state.quantity - 1));
+            document.getElementById('qtyInc').addEventListener('click', () => setQuantity(state.quantity + 1));
+            input.addEventListener('change', () => {
+                let val = parseInt(input.value, 10);
+                if (isNaN(val) || val < 1) val = 1;
+                setQuantity(val);
+            });
+            input.addEventListener('focus', () => {
+                display.classList.add('hidden');
+                input.classList.remove('hidden');
+                input.focus();
+                input.select();
+            });
+            input.addEventListener('blur', () => {
+                display.classList.remove('hidden');
+                input.classList.add('hidden');
+                let val = parseInt(input.value, 10);
+                if (isNaN(val) || val < 1) val = 1;
+                setQuantity(val);
+            });
+            showView('quantity');
+        }
+
+        function setQuantity(val) {
+            if (isNaN(val) || val < 1) val = 1;
+            state.quantity = val;
+            document.getElementById('qtyDisplay').textContent = val;
+            document.getElementById('qtyInput').value = val;
+            document.getElementById('qtyError').classList.add('hidden');
+        }
+
+        // Location (preserved)
+        function renderLocation() {
+            const lang = state.lang;
+            document.getElementById('locStepLabel').textContent = `${t('step3')} 3 / 4`;
+            document.getElementById('locHeading').textContent = t('locHeading');
+            document.getElementById('locGpsLabel').textContent = t('locGps');
+            document.getElementById('locOrLabel').textContent = t('locOr');
+            document.getElementById('locContinueLabel').textContent = t('locContinue');
+
+            const grid = document.getElementById('locationGrid');
+            grid.innerHTML = '';
+            LOCATIONS.forEach(loc => {
+                const name = loc[`name${lang === 'mr' ? 'Mr' : lang === 'hi' ? 'Hi' : 'En'}`] || loc.nameEn;
+                const div = document.createElement('div');
+                div.className = `location-card ${state.selectedLocation === loc.id ? 'selected' : ''}`;
+                div.dataset.loc = loc.id;
+                div.textContent = name;
+                div.setAttribute('role', 'button');
+                div.addEventListener('click', () => {
+                    state.selectedLocation = loc.id;
+                    document.querySelectorAll('#locationGrid .location-card').forEach(el => {
+                        el.classList.toggle('selected', el.dataset.loc === loc.id);
+                    });
+                    document.getElementById('locContinueBtn').disabled = false;
+                });
+                grid.appendChild(div);
+            });
+            document.getElementById('locUseGps').addEventListener('click', () => {
+                state.selectedLocation = 'pune';
+                document.querySelectorAll('#locationGrid .location-card').forEach(el => {
+                    el.classList.toggle('selected', el.dataset.loc === 'pune');
+                });
+                document.getElementById('locContinueBtn').disabled = false;
+                showToast('📍 पुणे — GPS सिम्युलेटेड', 'success');
+            });
+            document.getElementById('locContinueBtn').disabled = !state.selectedLocation;
+            showView('location');
+        }
+
+        // Market Comparison (preserved)
+        function renderCompare() {
+            const lang = state.lang;
+            document.getElementById('compareStepLabel').textContent = `${t('step4')} 4 / 4`;
+            document.getElementById('compareHeading').textContent = t('compareHeading');
+            document.getElementById('compareLoadingText').textContent = t('compareLoading');
+            document.getElementById('otherMarketsLabel').textContent = t('otherMarkets');
+            document.getElementById('demoDisclaimerCompare').textContent = t('demoDisclaimer');
+
+            const loading = document.getElementById('compareLoading');
+            const results = document.getElementById('compareResults');
+            loading.classList.remove('hidden');
+            results.classList.add('hidden');
+            showView('compare');
+
+            setTimeout(() => {
+                const cropId = state.selectedCrop;
+                const qty = state.quantity;
+                const locId = state.selectedLocation;
+                let markets = getMarketsForCrop(cropId, locId);
+                if (markets.length === 0) {
+                    loading.classList.add('hidden');
+                    results.classList.remove('hidden');
+                    document.getElementById('recommendedCard').innerHTML =
+                        `<div class="text-center py-6 text-earth">${t('noMarkets')}</div>`;
+                    document.getElementById('otherMarketsList').innerHTML = '';
+                    return;
+                }
+                const ranked = rankMarkets(markets, qty);
+                const rec = getRecommendedMarket(markets, qty);
+                state.selectedMarket = rec ? rec.market : null;
+                state.allMarketsRanked = ranked;
+                renderRecommended(rec, qty, ranked);
+                renderOtherMarkets(ranked, rec, qty);
+                loading.classList.add('hidden');
+                results.classList.remove('hidden');
+            }, 500);
+        }
+
+        function renderRecommended(recData, qty, ranked) {
+            const container = document.getElementById('recommendedCard');
+            if (!recData || !recData.market) {
+                container.innerHTML = `<div class="text-center py-6 text-earth">${t('noMarkets')}</div>`;
+                return;
+            }
+            const m = recData.market;
+            const calc = calcMarket(m, qty);
+            const name = getMarketName(m);
+            const isUnavailable = recData.unavailable || false;
+
+            let statusBadge = isUnavailable ?
+                `<span class="badge-locked">${t('unavailable')}</span>` :
+                `<span class="badge-up">⭐ ${t('recommendedBadge')}</span>`;
+
+            let reasonHtml = '';
+            if (!isUnavailable) {
+                const reasons = generateReason(m, calc);
+                reasonHtml = `<div class="mt-2 text-sm font-medium text-earth">${t('reasonBetter')}</div>
+                              <div class="text-sm text-earth">${reasons.join(' ')}</div>`;
+            } else {
+                reasonHtml =
+                    `<div class="mt-2 text-sm text-red-600">${t('minQtyReq', {min: m.minQuantity || 0})}</div>`;
+            }
+
+            container.innerHTML = `
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="text-sm text-earth font-medium">${statusBadge}</div>
+                <div class="market-name text-xl font-bold">${name}</div>
+                <div class="text-earth text-sm">${getLocationName(m.district)}</div>
+              </div>
+              <div class="text-right">
+                <div class="market-price text-2xl font-bold">₹${m.pricePerQuintal}</div>
+                <div class="text-xs text-earth">${t('perQuintal')}</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-3 text-center">
+              <div><div class="text-xs text-earth">📍 ${t('km')}</div><div class="font-semibold">${m.distanceKm}</div></div>
+              <div><div class="text-xs text-earth">🚚 ${t('transport')}</div><div class="font-semibold">₹${calc.transport}</div></div>
+              <div><div class="text-xs text-earth">💰 ${t('otherCosts')}</div><div class="font-semibold">₹${calc.other}</div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="flex items-center justify-between">
+              <div><div class="text-sm text-earth">${t('grossAmount')}</div><div class="text-lg font-bold">₹${calc.gross}</div></div>
+              <div class="text-right"><div class="text-sm text-earth">${t('netAfterCost')}</div><div class="text-display-lg font-bold text-green-deep">₹${calc.net}</div></div>
+            </div>
+            ${reasonHtml}
+            <div class="mt-3">
+              <button class="btn-primary btn-sm" id="compareSelectBtn">${t('chooseMarket')}</button>
+            </div>
+          `;
+
+            const selectBtn = container.querySelector('#compareSelectBtn');
+            if (selectBtn) {
+                selectBtn.addEventListener('click', () => {
+                    if (!isUnavailable) {
+                        // go to offer create
+                        state.selectedMarket = m;
+                        // prefill offer
+                        state.offerPrefill = {
+                            crop: state.selectedCrop,
+                            quantity: state.quantity,
+                            market: m,
+                            marketPrice: m.pricePerQuintal,
+                            gross: calc.gross,
+                            transport: calc.transport,
+                            other: calc.other,
+                            net: calc.net,
+                        };
+                        renderOfferCreate();
+                    } else {
+                        showToast(t('unavailable'), 'error');
+                    }
+                });
+            }
+        }
+
+        function renderOtherMarkets(ranked, recData, qty) {
+            const container = document.getElementById('otherMarketsList');
+            const recId = recData && recData.market ? recData.market.id : null;
+            const others = ranked.filter(r => r.market.id !== recId);
+
+            if (others.length === 0) {
+                container.innerHTML = `<div class="text-center text-earth text-sm py-4">${t('noMarkets')}</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            others.slice(0, 6).forEach((r) => {
+                const m = r.market;
+                const name = getMarketName(m);
+                const isUnavailable = !r.minQtyOk;
+                const netDisplay = isUnavailable ? '—' : `₹${r.net}`;
+
+                let statusBadge = '';
+                if (isUnavailable) {
+                    statusBadge = `<span class="badge-locked text-xs">${t('unavailable')}</span>`;
+                } else if (m.priceStatus === 'up') {
+                    statusBadge = `<span class="badge-up text-xs">${t('priceUp')}</span>`;
+                } else if (m.priceStatus === 'down') {
+                    statusBadge = `<span class="badge-down text-xs">${t('priceDown')}</span>`;
+                } else {
+                    statusBadge = `<span class="badge-stable text-xs">${t('priceStable')}</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `market-card mt-2 ${isUnavailable ? 'opacity-60' : ''}`;
+                card.innerHTML = `
+              <div class="flex items-start justify-between">
+                <div><div class="market-name">${name}</div><div class="text-xs text-earth">${getLocationName(m.district)} ${statusBadge}</div></div>
+                <div class="text-right"><div class="market-price">₹${m.pricePerQuintal}</div><div class="text-xs text-earth">${t('perQuintal')}</div></div>
+              </div>
+              <div class="grid grid-cols-3 gap-2 mt-2 text-center text-sm">
+                <div><span class="text-xs text-earth">📍</span> ${m.distanceKm} ${t('km')}</div>
+                <div><span class="text-xs text-earth">🚚</span> ₹${r.transport}</div>
+                <div><span class="text-xs text-earth">💰</span> ${netDisplay}</div>
+              </div>
+              ${isUnavailable ? `<div class="text-xs text-red-600 mt-1">${t('minQtyReq', {min: m.minQuantity || 0})}</div>` : ''}
+            `;
+                if (!isUnavailable) {
+                    card.addEventListener('click', () => {
+                        state.selectedMarket = m;
+                        // prefill for offer
+                        const calc = calcMarket(m, qty);
+                        state.offerPrefill = {
+                            crop: state.selectedCrop,
+                            quantity: state.quantity,
+                            market: m,
+                            marketPrice: m.pricePerQuintal,
+                            gross: calc.gross,
+                            transport: calc.transport,
+                            other: calc.other,
+                            net: calc.net,
+                        };
+                        renderOfferCreate();
+                    });
+                }
+                container.appendChild(card);
+            });
+        }
+
+        // Market Details (preserved but with new button)
+        function renderDetails() {
+            const m = state.selectedMarket;
+            if (!m) { showView('compare'); return; }
+            const qty = state.quantity;
+            const calc = calcMarket(m, qty);
+            const name = getMarketName(m);
+
+            document.getElementById('detailsLabel').textContent = t('detailsLabel');
+            document.getElementById('detailsOfferLabel').textContent = t('detailsOffer');
+            document.getElementById('demoDisclaimerDetails').textContent = t('demoDisclaimer');
+
+            const container = document.getElementById('detailsContent');
+            let statusBadge = '';
+            if (m.priceStatus === 'up') statusBadge = `<span class="badge-up">${t('priceUp')}</span>`;
+            else if (m.priceStatus === 'down') statusBadge = `<span class="badge-down">${t('priceDown')}</span>`;
+            else statusBadge = `<span class="badge-stable">${t('priceStable')}</span>`;
+
+            const minQtyOk = qty >= (m.minQuantity || 0);
+
+            container.innerHTML = `
+            <div class="card">
+              <div class="flex items-start justify-between">
+                <div><div class="text-2xl font-bold">${name}</div><div class="text-earth">${getLocationName(m.district)}</div><div class="mt-1">${statusBadge}</div></div>
+                <div class="text-right"><div class="text-3xl font-bold text-green-deep">₹${m.pricePerQuintal}</div><div class="text-sm text-earth">${t('perQuintal')}</div></div>
+              </div>
+            </div>
+            <div class="card mt-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div><div class="text-sm text-earth">${t('grossAmount')}</div><div class="text-2xl font-bold">₹${calc.gross}</div></div>
+                <div><div class="text-sm text-earth">${t('transport')}</div><div class="text-xl font-semibold text-red-600">− ₹${calc.transport}</div></div>
+                <div><div class="text-sm text-earth">${t('otherCosts')}</div><div class="text-xl font-semibold text-red-600">− ₹${calc.other}</div></div>
+                <div><div class="text-sm text-earth">${t('netAfterCost')}</div><div class="text-2xl font-bold text-green-deep">₹${calc.net}</div></div>
+              </div>
+              <div class="divider"></div>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div><span class="text-earth">📍 ${t('km')}</span> ${m.distanceKm}</div>
+                <div><span class="text-earth">📦 किमान मात्रा</span> ${m.minQuantity || 0} ${t('qtyUnit')}</div>
+                <div><span class="text-earth">🕐 ${t('lastUpdated')}</span> ${new Date(m.lastUpdated).toLocaleString()}</div>
+                <div><span class="text-earth">📞 संपर्क</span> ${m.contact || '—'}</div>
+              </div>
+              ${!minQtyOk ? `<div class="mt-2 text-sm text-red-600">${t('minQtyReq', {min: m.minQuantity || 0})}</div>` : ''}
+            </div>
+          `;
+
+            const offerBtn = document.getElementById('detailsOfferBtn');
+            offerBtn.disabled = !minQtyOk;
+            offerBtn.style.opacity = minQtyOk ? '1' : '0.5';
+            showView('details');
+        }
+
+        // ─── OFFER CREATE ───
+        function renderOfferCreate() {
+            const prefill = state.offerPrefill;
+            if (!prefill) { navigateTo('compare'); return; }
+
+            document.getElementById('offerCreateHeading').textContent = t('offerCreateHeading');
+            document.getElementById('offerAskLabel').textContent = t('offerAsk');
+            document.getElementById('offerDateLabel').textContent = t('offerDate');
+            document.getElementById('offerDateToday').textContent = t('offerToday');
+            document.getElementById('offerDateTomorrow').textContent = t('offerTomorrow');
+            document.getElementById('offerDate2_3').textContent = t('offer2_3');
+            document.getElementById('offerDateWeek').textContent = t('offerWeek');
+            document.getElementById('publishOfferLabel').textContent = t('publishOffer');
+
+            const cropName = getCropName(prefill.crop);
+            const marketName = getMarketName(prefill.market);
+            document.getElementById('offerCropName').textContent = cropName;
+            document.getElementById('offerQty').textContent = `${prefill.quantity} ${t('qtyUnit')}`;
+            document.getElementById('offerMarket').textContent = marketName;
+            document.getElementById('offerMarketPrice').textContent = `₹${prefill.marketPrice}`;
+            document.getElementById('offerGross').textContent = `₹${prefill.gross}`;
+            document.getElementById('offerCosts').textContent = `₹${prefill.transport + prefill.other}`;
+            document.getElementById('offerNet').textContent = `₹${prefill.net}`;
+
+            // set ask price default
+            document.getElementById('offerAskPrice').value = prefill.marketPrice + 50; // slightly higher
+
+            // date selection
+            document.querySelectorAll('#offerCreateCard [data-date]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#offerCreateCard [data-date]').forEach(b =>
+                        b.classList.remove('btn-primary'));
+                    btn.classList.add('btn-primary');
+                    document.getElementById('offerDateSelected').value = btn.dataset.date;
+                });
+            });
+            // default today
+            document.getElementById('offerDateToday').classList.add('btn-primary');
+
+            showView('offer-create');
+        }
+
+        function publishOffer() {
+            const prefill = state.offerPrefill;
+            if (!prefill) return;
+            const askPrice = parseInt(document.getElementById('offerAskPrice').value, 10);
+            if (isNaN(askPrice) || askPrice <= 0) {
+                showToast('कृपया योग्य भाव भरा.', 'error');
+                return;
+            }
+            const availableDate = document.getElementById('offerDateSelected').value;
+            const farmer = state.farmer;
+
+            const offer = {
+                id: 'offer_' + Date.now(),
+                farmerId: 'farmer1',
+                farmerName: farmer.name,
+                crop: prefill.crop,
+                quantity: prefill.quantity,
+                unit: 'quintal',
+                market: prefill.market.id,
+                district: farmer.district,
+                askingPricePerQuintal: askPrice,
+                marketPricePerQuintal: prefill.marketPrice,
+                estimatedGrossAmount: prefill.gross,
+                estimatedTransportCost: prefill.transport,
+                estimatedOtherCosts: prefill.other,
+                estimatedNetAmount: prefill.net,
+                availableDate: availableDate,
+                status: 'active',
+                createdAt: new Date().toISOString()
+            };
+
+            state.offers.push(offer);
+            saveState();
+
+            // show success
+            renderOfferSuccess(offer);
+        }
+
+        function renderOfferSuccess(offer) {
+            document.getElementById('successHeading').textContent = t('successHeading');
+            document.getElementById('successMessage').textContent = t('successMessage');
+            document.getElementById('successViewOfferLabel').textContent = t('successViewOffer');
+            document.getElementById('successHomeLabel').textContent = t('successHome');
+
+            const card = document.getElementById('successOfferCard');
+            const cropName = getCropName(offer.crop);
+            const marketName = getMarketName(MARKETS.find(m => m.id === offer.market));
+            card.innerHTML = `
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><span class="text-earth">${t('offerCrop')}</span> ${cropName}</div>
+              <div><span class="text-earth">${t('offerQty')}</span> ${offer.quantity} ${t('qtyUnit')}</div>
+              <div><span class="text-earth">भाव</span> ₹${offer.askingPricePerQuintal} ${t('perQuintal')}</div>
+              <div><span class="text-earth">${t('offerMarket')}</span> ${marketName}</div>
+              <div class="col-span-2"><span class="text-earth">Status</span> ${getStatusLabel(offer.status)}</div>
+            </div>
+          `;
+
+            showView('offer-success');
+        }
+
+        // ─── MY OFFERS ───
+        function renderMyOffers() {
+            document.getElementById('myOffersHeading').textContent = t('myOffersHeading');
+            const list = document.getElementById('myOffersList');
+            const empty = document.getElementById('emptyOffers');
+            const farmerOffers = state.offers.filter(o => o.farmerId === 'farmer1');
+
+            if (farmerOffers.length === 0) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+                document.getElementById('emptyOffersText').textContent = t('emptyOffers');
+                document.getElementById('emptyCreateOfferLabel').textContent = t('emptyCreateOffer');
+            } else {
+                empty.classList.add('hidden');
+                list.innerHTML = '';
+                farmerOffers.forEach(offer => {
+                    const cropName = getCropName(offer.crop);
+                    const market = MARKETS.find(m => m.id === offer.market);
+                    const marketName = market ? getMarketName(market) : offer.market;
+                    const statusLabel = getStatusLabel(offer.status);
+                    const card = document.createElement('div');
+                    card.className = 'card mt-2';
+                    card.innerHTML = `
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="font-bold">${cropName}</div>
+                    <div class="text-sm text-earth">${offer.quantity} ${t('qtyUnit')} · ₹${offer.askingPricePerQuintal} ${t('perQuintal')}</div>
+                    <div class="text-sm text-earth">📍 ${marketName}</div>
+                    <div class="text-sm">${statusLabel}</div>
+                  </div>
+                  <button class="btn-outline w-auto px-4 py-1 text-sm view-offer-btn" data-id="${offer.id}">${t('viewOffers')}</button>
+                </div>
+              `;
+                    list.appendChild(card);
+                });
+                // attach events
+                list.querySelectorAll('.view-offer-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.dataset.id;
+                        state.currentOfferId = id;
+                        renderOfferDetails(id);
+                    });
+                });
+            }
+            showView('my-offers');
+        }
+
+        // ─── OFFER DETAILS (farmer) ───
+        function renderOfferDetails(offerId) {
+            const offer = state.offers.find(o => o.id === offerId);
+            if (!offer) { showToast('ऑफर सापडली नाही.', 'error');
+                navigateTo('my-offers'); return; }
+
+            document.getElementById('offerDetailsHeading').textContent = t('offerDetailsHeading');
+            document.getElementById('offerDetailsBuyerLabel').textContent = t('buyerView');
+
+            const container = document.getElementById('offerDetailsContent');
+            const cropName = getCropName(offer.crop);
+            const market = MARKETS.find(m => m.id === offer.market);
+            const marketName = market ? getMarketName(market) : offer.market;
+
+            container.innerHTML = `
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><span class="text-earth">${t('offerCrop')}</span> ${cropName}</div>
+              <div><span class="text-earth">${t('offerQty')}</span> ${offer.quantity} ${t('qtyUnit')}</div>
+              <div><span class="text-earth">अपेक्षित भाव</span> ₹${offer.askingPricePerQuintal} ${t('perQuintal')}</div>
+              <div><span class="text-earth">बाजारभाव</span> ₹${offer.marketPricePerQuintal} ${t('perQuintal')}</div>
+              <div><span class="text-earth">${t('offerMarket')}</span> ${marketName}</div>
+              <div><span class="text-earth">Status</span> ${getStatusLabel(offer.status)}</div>
+              <div class="col-span-2"><span class="text-earth">${t('grossAmount')}</span> ₹${offer.estimatedGrossAmount}</div>
+              <div class="col-span-2"><span class="text-earth">${t('transport')} + ${t('otherCosts')}</span> ₹${offer.estimatedTransportCost + offer.estimatedOtherCosts}</div>
+              <div class="col-span-2"><span class="text-earth">${t('netAfterCost')}</span> <span class="font-bold text-green-deep">₹${offer.estimatedNetAmount}</span></div>
+              <div class="col-span-2"><span class="text-earth">उपलब्धता</span> ${offer.availableDate}</div>
+              <div class="col-span-2"><span class="text-earth">प्रकाशित</span> ${new Date(offer.createdAt).toLocaleDateString()}</div>
+            </div>
+            ${offer.status === 'interested' ? `<div class="mt-3 text-sm text-earth">🟡 1 खरेदीदाराला या ऑफरमध्ये रस आहे.</div>` : ''}
+          `;
+
+            // show buyer button only if interested
+            const buyerBtn = document.getElementById('offerDetailsBuyerBtn');
+            if (offer.status === 'interested') {
+                buyerBtn.style.display = 'block';
+                buyerBtn.onclick = () => {
+                    // show buyer details - we simulate by opening buyer view with this offer highlighted
+                    state.buyerMode = true;
+                    renderBuyerOffers(offer.id);
+                };
+            } else {
+                buyerBtn.style.display = 'none';
+            }
+
+            showView('offer-details');
+        }
+
+        // ─── BUYER VIEW ───
+        function renderBuyerOffers(highlightOfferId) {
+            document.getElementById('buyerOffersHeading').textContent = t('buyerOffersHeading');
+            document.getElementById('buyerModeBadge').textContent = t('buyerMode');
+
+            const list = document.getElementById('buyerOffersList');
+            list.innerHTML = '';
+            const activeOffers = state.offers.filter(o => o.status === 'active' || o.status === 'interested');
+
+            if (activeOffers.length === 0) {
+                list.innerHTML = `<div class="text-center text-earth py-6">सध्या कोणत्याही ऑफर्स उपलब्ध नाहीत.</div>`;
+                showView('buyer-offers');
+                return;
+            }
+
+            activeOffers.forEach(offer => {
+                const cropName = getCropName(offer.crop);
+                const market = MARKETS.find(m => m.id === offer.market);
+                const marketName = market ? getMarketName(market) : offer.market;
+                const card = document.createElement('div');
+                card.className = 'card mt-2';
+                if (offer.id === highlightOfferId) {
+                    card.classList.add('card-recommended');
+                }
+                card.innerHTML = `
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="font-bold">${cropName}</div>
+                  <div class="text-sm text-earth">${offer.quantity} ${t('qtyUnit')} · ₹${offer.askingPricePerQuintal} ${t('perQuintal')}</div>
+                  <div class="text-sm text-earth">📍 ${getLocationName(offer.district)} · ${marketName}</div>
+                  <div class="text-sm">🟢 ${t('statusActive')}</div>
+                </div>
+                <button class="btn-outline w-auto px-4 py-1 text-sm buyer-view-offer-btn" data-id="${offer.id}">${t('viewOffers')}</button>
+              </div>
+            `;
+                list.appendChild(card);
+            });
+
+            list.querySelectorAll('.buyer-view-offer-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    renderBuyerOfferDetails(id);
+                });
+            });
+
+            showView('buyer-offers');
+        }
+
+        // ─── BUYER OFFER DETAILS ───
+        function renderBuyerOfferDetails(offerId) {
+            const offer = state.offers.find(o => o.id === offerId);
+            if (!offer) { showToast('ऑफर सापडली नाही.', 'error'); return; }
+
+            document.getElementById('buyerOfferDetailsHeading').textContent = t('offerDetailsHeading');
+            document.getElementById('buyerContactLabel').textContent = t('buyerContact');
+            document.getElementById('buyerTakeOfferLabel').textContent = t('buyerTakeOffer');
+
+            const container = document.getElementById('buyerOfferDetailsContent');
+            const cropName = getCropName(offer.crop);
+            const market = MARKETS.find(m => m.id === offer.market);
+            const marketName = market ? getMarketName(market) : offer.market;
+
+            container.innerHTML = `
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><span class="text-earth">${t('offerCrop')}</span> ${cropName}</div>
+              <div><span class="text-earth">${t('offerQty')}</span> ${offer.quantity} ${t('qtyUnit')}</div>
+              <div><span class="text-earth">अपेक्षित भाव</span> ₹${offer.askingPricePerQuintal} ${t('perQuintal')}</div>
+              <div><span class="text-earth">बाजारभाव</span> ₹${offer.marketPricePerQuintal} ${t('perQuintal')}</div>
+              <div><span class="text-earth">शेतकरी</span> ${offer.farmerName}</div>
+              <div><span class="text-earth">स्थान</span> ${getLocationName(offer.district)}</div>
+              <div class="col-span-2"><span class="text-earth">${t('offerMarket')}</span> ${marketName}</div>
+              <div class="col-span-2"><span class="text-earth">उपलब्धता</span> ${offer.availableDate}</div>
+            </div>
+          `;
+
+            // store current offer id for actions
+            const contactBtn = document.getElementById('buyerContactBtn');
+            const takeBtn = document.getElementById('buyerTakeOfferBtn');
+
+            contactBtn.onclick = () => {
+                showToast(t('buyerContactMsg'), 'success');
+            };
+
+            takeBtn.onclick = () => {
+                if (offer.status === 'sold') {
+                    showToast('ही ऑफर आधीच विकली गेली आहे.', 'error');
+                    return;
+                }
+                // update offer status
+                offer.status = 'interested';
+                // also update notification for farmer
+                saveState();
+                showToast(t('buyerOfferTaken'), 'success');
+                // refresh buyer list
+                renderBuyerOffers();
+                // also update farmer's notification badge will reflect after reload
+            };
+
+            showView('buyer-offer-details');
+        }
+
+        // ─── TODAY'S PRICES (preserved) ───
+        function renderPrices() {
+            document.getElementById('pricesHeading').textContent = t('pricesHeading');
+            document.getElementById('pricesSub').textContent = t('pricesSub');
+            document.getElementById('pricesUpdateLabel').textContent = t('pricesUpdate');
+            document.getElementById('demoDisclaimerPrices').textContent = t('demoDisclaimer');
+
+            const container = document.getElementById('pricesList');
+            container.innerHTML = '';
+            CROPS.forEach(crop => {
+                const market = MARKETS.find(m => m.crop === crop.id);
+                if (!market) return;
+                const name = crop[`name${state.lang === 'mr' ? 'Mr' : state.lang === 'hi' ? 'Hi' : 'En'}`] || crop
+                .nameEn;
+                let statusBadge = '';
+                if (market.priceStatus === 'up') statusBadge = `<span class="badge-up text-xs">${t('priceUp')}</span>`;
+                else if (market.priceStatus === 'down') statusBadge =
+                    `<span class="badge-down text-xs">${t('priceDown')}</span>`;
+                else statusBadge = `<span class="badge-stable text-xs">${t('priceStable')}</span>`;
+
+                const card = document.createElement('div');
+                card.className = 'card flex items-center justify-between mt-2';
+                card.innerHTML = `
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">${crop.emoji}</span>
+                <div><div class="font-semibold">${name}</div><div class="text-xs text-earth">${getLocationName(market.district)}</div></div>
+              </div>
+              <div class="text-right"><div class="font-bold text-lg text-green-deep">₹${market.pricePerQuintal}</div><div class="text-xs">${t('perQuintal')} ${statusBadge}</div></div>
+            `;
+                container.appendChild(card);
+            });
+            showView('prices');
+        }
+
+        // ─── NAVIGATION ───
+        function navigateTo(view, data) {
+            switch (view) {
+                case 'login':
+                    renderLogin();
+                    break;
+                case 'home':
+                    renderHome();
+                    break;
+                case 'profile':
+                    renderProfile();
+                    break;
+                case 'edit-profile':
+                    renderEditProfile();
+                    break;
+                case 'crop':
+                    renderCropSelection();
+                    break;
+                case 'quantity':
+                    renderQuantity();
+                    break;
+                case 'location':
+                    renderLocation();
+                    break;
+                case 'compare':
+                    renderCompare();
+                    break;
+                case 'details':
+                    renderDetails();
+                    break;
+                case 'offer-create':
+                    renderOfferCreate();
+                    break;
+                case 'offer-success':
+                    // expects offer object in data
+                    renderOfferSuccess(data);
+                    break;
+                case 'my-offers':
+                    renderMyOffers();
+                    break;
+                case 'offer-details':
+                    renderOfferDetails(data);
+                    break;
+                case 'buyer-offers':
+                    renderBuyerOffers(data);
+                    break;
+                case 'buyer-offer-details':
+                    renderBuyerOfferDetails(data);
+                    break;
+                case 'prices':
+                    renderPrices();
+                    break;
+                default:
+                    renderHome();
+            }
+        }
+
+        // ─── EVENT BINDING ───
+        function initEvents() {
+            // Home language dropdown
+document.getElementById('homeLangSelect').addEventListener('change', (e) => {
+  changeLanguage(e.target.value);
+});
+
+// Profile language dropdown
+document.getElementById('profileLangSelect').addEventListener('change', (e) => {
+  changeLanguage(e.target.value);
+});
+            // Login
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                const mobile = document.getElementById('loginMobile').value.trim();
+                const pass = document.getElementById('loginPassword').value.trim();
+                if (mobile.length < 10) {
+                    showToast('कृपया 10 अंकी मोबाइल नंबर भरा.', 'error');
+                    return;
+                }
+                // any login works
+                state.isLoggedIn = true;
+                state.farmer.phone = mobile;
+                state.farmer.language = state.lang;
+                saveState();
+                navigateTo('home');
+                showToast('लॉग इन यशस्वी!', 'success');
+            });
+
+            // Profile icon
+            document.getElementById('profileIcon').addEventListener('click', () => {
+                navigateTo('profile');
+            });
+
+            // Profile back
+            document.getElementById('profileBackBtn').addEventListener('click', () => navigateTo('home'));
+
+            // Edit profile
+            document.getElementById('editProfileBtn').addEventListener('click', () => navigateTo('edit-profile'));
+
+            // Edit profile back
+            document.getElementById('editProfileBackBtn').addEventListener('click', () => navigateTo('profile'));
+
+            // Save profile
+            document.getElementById('saveProfileBtn').addEventListener('click', () => {
+                const name = document.getElementById('editName').value.trim();
+                const village = document.getElementById('editVillage').value.trim();
+                const district = document.getElementById('editDistrict').value.trim();
+                const lang = document.getElementById('editLang').value;
+                if (!name || !village || !district) {
+                    showToast('कृपया सर्व फील्ड भरा.', 'error');
+                    return;
+                }
+                state.farmer.name = name;
+                state.farmer.village = village;
+                state.farmer.district = district;
+                state.farmer.language = lang;
+                state.lang = lang;
+                saveState();
+                navigateTo('profile');
+                showToast('प्रोफाइल अपडेट केले.', 'success');
+            });
+
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                state.isLoggedIn = false;
+                saveState();
+                navigateTo('login');
+                showToast('लॉगआउट झाले.', 'success');
+            });
+
+            // Home sell
+            document.getElementById('btnSellProduce').addEventListener('click', () => {
+                navigateTo('crop');
+            });
+
+            // Today prices from home
+            document.getElementById('btnTodayPrices').addEventListener('click', () => navigateTo('prices'));
+
+            // View offers from home
+            document.getElementById('viewOffersBtn').addEventListener('click', () => navigateTo('my-offers'));
+
+            // Notification bell - show interested offers
+            document.getElementById('notificationBell').addEventListener('click', () => {
+                const interested = state.offers.filter(o => o.farmerId === 'farmer1' && o.status === 'interested');
+                if (interested.length === 0) {
+                    showToast('कोणत्याही नवीन सूचना नाहीत.', '');
+                    return;
+                }
+                // show first interested offer
+                const offer = interested[0];
+                const cropName = getCropName(offer.crop);
+                showToast(`${t('notificationTitle')}: ${t('notificationMsg', {crop: cropName})}`, 'success');
+                // navigate to offer details after a moment
+                setTimeout(() => {
+                    navigateTo('offer-details', offer.id);
+                }, 1500);
+            });
+
+            // Bottom nav
+            document.querySelectorAll('#bottomNav button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const view = btn.dataset.view;
+                    if (view === 'home') navigateTo('home');
+                    else if (view === 'crop') navigateTo('crop');
+                    else if (view === 'prices') navigateTo('prices');
+                });
+            });
+
+            // Back buttons for flow
+            document.getElementById('cropBackBtn').addEventListener('click', () => navigateTo('home'));
+            document.getElementById('qtyBackBtn').addEventListener('click', () => navigateTo('crop'));
+            document.getElementById('locBackBtn').addEventListener('click', () => navigateTo('quantity'));
+            document.getElementById('compareBackBtn').addEventListener('click', () => navigateTo('location'));
+            document.getElementById('detailsBackBtn').addEventListener('click', () => navigateTo('compare'));
+
+            // Crop continue
+            document.getElementById('cropContinueBtn').addEventListener('click', () => {
+                if (state.selectedCrop) navigateTo('quantity');
+            });
+
+            // Quantity continue
+            document.getElementById('qtyContinueBtn').addEventListener('click', () => {
+                const qty = state.quantity;
+                if (qty > 0) {
+                    document.getElementById('qtyError').classList.add('hidden');
+                    navigateTo('location');
+                } else {
+                    document.getElementById('qtyError').classList.remove('hidden');
+                }
+            });
+
+            // Location continue
+            document.getElementById('locContinueBtn').addEventListener('click', () => {
+                if (state.selectedLocation) navigateTo('compare');
+            });
+
+            // Details offer button (now redirects to offer create)
+            document.getElementById('detailsOfferBtn').addEventListener('click', () => {
+                const m = state.selectedMarket;
+                if (!m) return;
+                const qty = state.quantity;
+                if (qty < (m.minQuantity || 0)) {
+                    showToast(t('unavailable'), 'error');
+                    return;
+                }
+                // prefill
+                const calc = calcMarket(m, qty);
+                state.offerPrefill = {
+                    crop: state.selectedCrop,
+                    quantity: qty,
+                    market: m,
+                    marketPrice: m.pricePerQuintal,
+                    gross: calc.gross,
+                    transport: calc.transport,
+                    other: calc.other,
+                    net: calc.net,
+                };
+                navigateTo('offer-create');
+            });
+
+            // Offer create back
+            document.getElementById('offerCreateBackBtn').addEventListener('click', () => navigateTo('details'));
+
+            // Publish offer
+            document.getElementById('publishOfferBtn').addEventListener('click', publishOffer);
+
+            // Success screen buttons
+            document.getElementById('successViewOfferBtn').addEventListener('click', () => {
+                const latest = state.offers[state.offers.length - 1];
+                if (latest) navigateTo('offer-details', latest.id);
+                else navigateTo('my-offers');
+            });
+            document.getElementById('successHomeBtn').addEventListener('click', () => navigateTo('home'));
+
+            // My offers back
+            document.getElementById('myOffersBackBtn').addEventListener('click', () => navigateTo('home'));
+
+            // Empty create offer
+            document.getElementById('emptyCreateOfferBtn').addEventListener('click', () => navigateTo('crop'));
+
+            // Offer details back
+            document.getElementById('offerDetailsBackBtn').addEventListener('click', () => navigateTo('my-offers'));
+
+            // Buyer offers back
+            document.getElementById('buyerOffersBackBtn').addEventListener('click', () => {
+                state.buyerMode = false;
+                navigateTo('home');
+            });
+
+            // Buyer offer details back
+            document.getElementById('buyerOfferDetailsBackBtn').addEventListener('click', () => {
+                navigateTo('buyer-offers');
+            });
+
+            // Prices back
+            document.getElementById('pricesBackBtn').addEventListener('click', () => navigateTo('home'));
+
+            // Lang selector (global)
+            document.querySelectorAll('#langSelector, .lang-selector').forEach(selector => {
+                // not used in this version, but we'll keep a hidden one
+            });
+            // Actually we don't have lang selector in header now, but we keep it functional via edit profile
+            // We'll also add a language switch in profile only
+        }
+
+        // ─── INIT ───
+        function init() {
+            // load state
+            loadState();
+
+            // set language from farmer
+            if (state.farmer.language) {
+                state.lang = state.farmer.language;
+            } else {
+                const browserLang = navigator.language || 'en';
+                if (browserLang.startsWith('mr')) state.lang = 'mr';
+                else if (browserLang.startsWith('hi')) state.lang = 'hi';
+                else state.lang = 'en';
+                state.farmer.language = state.lang;
+            }
+// Inside init(), after state.lang is set:
+document.getElementById('homeLangSelect').value = state.lang;
+document.getElementById('profileLangSelect').value = state.lang;
+            // if logged in, go home
+            if (state.isLoggedIn) {
+                navigateTo('home');
+            } else {
+                navigateTo('login');
+            }
+            // Update bottom nav labels for the first time
+            updateNavLabels();
+
+            // additional: show buyer mode toggle hidden? We'll add a small demo switch in home? No, we have buyer view accessible via notification or direct URL? We'll keep it as is.
+            // We'll also add a hidden way to access buyer view: from home, if you click on the offers summary? Not needed.
+            // We'll add a small "Buyer Preview" link in the footer? Not necessary, we have notification bell that can lead.
+
+            // To enable easy demo for judges, we can add a button in home that switches to buyer view
+            // We'll add a small text link in the disclaimer area.
+            const disclaimer = document.querySelector('#view-home .disclaimer');
+            if (disclaimer) {
+                const buyerLink = document.createElement('span');
+                buyerLink.textContent = ' | खरेदीदार दृश्य';
+                buyerLink.style.cursor = 'pointer';
+                buyerLink.style.color = '#2b6e3b';
+                buyerLink.style.fontWeight = '600';
+                buyerLink.addEventListener('click', () => {
+                    navigateTo('buyer-offers');
+                });
+                disclaimer.appendChild(buyerLink);
+            }
+
+            initEvents();
+            console.log('🌾 Kisan-Net upgraded');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
