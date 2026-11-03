@@ -1,0 +1,47 @@
+#!/usr/bin/env sh
+# Infineo Universal Git Post-Commit Hook
+# Single source of truth: Infineo Engineering Playbook
+# Enforces strict pre-commit verification by detecting and rolling back commits created via --no-verify or -n
+
+GIT_DIR="$(git rev-parse --git-dir 2>/dev/null)"
+if [ -z "$GIT_DIR" ]; then
+    exit 0
+fi
+
+MARKER="$GIT_DIR/.infineo_pre_commit_tree"
+
+# Allow non-interactive rebase, merge conflict resolution, and cherry-pick operations
+if [ -d "$GIT_DIR/rebase-merge" ] || [ -d "$GIT_DIR/rebase-apply" ] || [ -f "$GIT_DIR/MERGE_HEAD" ] || [ -f "$GIT_DIR/CHERRY_PICK_HEAD" ]; then
+    rm -f "$MARKER" 2>/dev/null || true
+    exit 0
+fi
+
+HEAD_TREE="$(git rev-parse "HEAD^{tree}" 2>/dev/null)"
+
+if [ -f "$MARKER" ]; then
+    STAGED_TREE="$(cat "$MARKER" 2>/dev/null)"
+    rm -f "$MARKER" 2>/dev/null || true
+    if [ "$STAGED_TREE" = "$HEAD_TREE" ]; then
+        exit 0
+    fi
+fi
+
+# Pre-commit marker is missing or invalid -> --no-verify was used to bypass checks
+echo ""
+echo "========================================================"
+echo " ❌ [FATAL: HOOK BYPASS DETECTED — COMMIT REJECTED]"
+echo "========================================================"
+echo " Error: This commit was created using '--no-verify' (-n) or bypassed pre-commit hooks."
+echo " Infineo Engineering Rules STRICTLY FORBID bypassing Git quality gates."
+echo ""
+echo " 🔄 Automatically rolling back commit (staged files are preserved)..."
+git reset --soft HEAD~1 2>/dev/null || true
+echo " ✅ Commit rolled back. Staged working tree preserved."
+echo ""
+echo " Required Action:"
+echo " 1. Run git commit WITHOUT '--no-verify'."
+echo " 2. Inspect the pre-commit gate failure and fix the underlying code/tests."
+echo " 3. Re-stage and commit normally."
+echo "========================================================"
+echo ""
+exit 1

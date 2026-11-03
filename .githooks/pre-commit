@@ -107,4 +107,12 @@ if [ "${SKIP_IDENTIFIER_CHECK:-0}" != "1" ] && [ "${SKIP_SINGLE_LETTER_CHECK:-0}
     fi
 fi
 
+# ------------------------------------------------------------------------------
+# Record staged tree marker for post-commit anti-bypass verification
+# ------------------------------------------------------------------------------
+GIT_DIR="$(git rev-parse --git-dir 2>/dev/null)"
+if [ -n "$GIT_DIR" ]; then
+    git write-tree > "$GIT_DIR/.infineo_pre_commit_tree" 2>/dev/null || true
+fi
+
 exit 0
