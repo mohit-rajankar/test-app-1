@@ -24,7 +24,7 @@ if [ "${SKIP_BRANCH_CHECK:-0}" = "1" ]; then
     exit 0
 fi
 
-# Protected / Exempt branches that do not require the feature-branch convention
+# Protected / Exempt branches that do not require the feature-branch convention.
 EXEMPT_BRANCHES="^(main|master|staging|production|develop|dev|release/.*)$"
 if echo "$CURRENT_BRANCH" | grep -Eq "$EXEMPT_BRANCHES"; then
     exit 0
