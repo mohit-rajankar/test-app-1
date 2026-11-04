@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Git Central Hooks - Pre-Push Hook
+# ==============================================================================
+# Gate 1: Branch Naming Validation & Malpractice Prevention
+#   Validates that all branches being pushed (both local and remote) adhere
+#   to the Infineo branch naming convention:
+#     <type>/<developer>/<YYYY-MM-DD>/<description>
+#   Allowed types:
+#     feature, bugfix, hotfix, chore, docs, refactor, test
+#   Exempt branches:
+#     main, master, staging, production, develop, dev, release/*
+#   Malpractices Blocked:
+#     - Pushing to unapproved branch names (e.g. 'build', arbitrary names)
+#     - Renaming local branches after commit to bypass commit-stage checks
+#     - Refspec pushing (e.g. pushing a local branch into remote 'build')
+#
+# Gate 3: Single-Letter Identifier Validation in Commits Being Pushed
+#   Verifies that no single-letter identifiers exist in the commits being pushed.
+#   Guards against --no-verify bypasses or commits imported from unhooked clones.
+# ==============================================================================
+
+set -e
+
+REMOTE_NAME="$1"
+REMOTE_URL="$2"
+
+VALID_BRANCH_REGEX="^(feature|bugfix|hotfix|chore|docs|refactor|test)/[a-zA-Z0-9_-]+/[0-9]{4}-[0-9]{2}-[0-9]{2}/[a-zA-Z0-9._-]+$"
+EXEMPT_BRANCHES="^(main|master|staging|production|develop|dev|release/.*)$"
+ZERO_SHA="0000000000000000000000000000000000000000"
+
+HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
+IDENTIFIER_SCRIPT=""
+if [ -f "$HOOK_DIR/check_single_letter_identifiers.py" ]; then
+    IDENTIFIER_SCRIPT="$HOOK_DIR/check_single_letter_identifiers.py"
+elif [ -f ".githooks/check_single_letter_identifiers.py" ]; then
+    IDENTIFIER_SCRIPT=".githooks/check_single_letter_identifiers.py"
+elif [ -f "scripts/check_single_letter_identifiers.py" ]; then
+    IDENTIFIER_SCRIPT="scripts/check_single_letter_identifiers.py"
+fi
+
+PYTHON_BIN=""
+if command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+elif command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python3"
+fi
+
+if [ -n "$PYTHON_BIN" ]; then
+    if ! "$PYTHON_BIN" -c "import sys" >/dev/null 2>&1; then
+        PYTHON_BIN=""
+    fi
+fi
+
+# Process each ref line from standard input:
+# Format: <local ref> <local sha1> <remote ref> <remote sha1>
+while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+    # --------------------------------------------------------------------------
+    # Handle branch deletions (e.g. git push origin --delete branch)
+    # --------------------------------------------------------------------------
+    if [ "$LOCAL_SHA" = "$ZERO_SHA" ] || [ "$LOCAL_REF" = "(delete)" ]; then
+        REMOTE_BRANCH="${REMOTE_REF#refs/heads/}"
+        if echo "$REMOTE_BRANCH" | grep -Eq "^(main|master|production)$"; then
+            echo "================================================================================"
+            echo "❌ PUSH REJECTED: Deletion of protected branch '$REMOTE_BRANCH' is prohibited."
+            echo "================================================================================"
+            exit 1
+        fi
+        continue
+    fi
+
+    # --------------------------------------------------------------------------
+    # Gate 1: Branch Naming Validation & Malpractice Prevention
+    # --------------------------------------------------------------------------
+    case "$REMOTE_REF" in
+        refs/heads/*)
+            REMOTE_BRANCH="${REMOTE_REF#refs/heads/}"
+
+            # Validate target remote branch name
+            if ! echo "$REMOTE_BRANCH" | grep -Eq "$EXEMPT_BRANCHES"; then
+                if ! echo "$REMOTE_BRANCH" | grep -Eq "$VALID_BRANCH_REGEX"; then
+                    echo "================================================================================"
+                    echo "❌ PUSH REJECTED: Invalid remote branch name '$REMOTE_BRANCH'"
+                    echo "================================================================================"
+                    echo "Remote target branch must adhere to the Infineo branch naming convention:"
+                    echo "  <type>/<developer>/<YYYY-MM-DD>/<description>"
+                    echo ""
+                    echo "Allowed types:"
+                    echo "  feature, bugfix, hotfix, chore, docs, refactor, test"
+                    echo ""
+                    echo "Valid examples:"
+                    echo "  feature/xyz/2026-10-15/add-login-page"
+                    echo "  bugfix/xyz/2026-10-15/fix-login-error"
+                    echo "  chore/xyz/2026-10-15/update-ci-workflow"
+                    echo ""
+                    echo "Exempt branches:"
+                    echo "  main, master, staging, production, develop, dev, release/*"
+                    echo ""
+                    echo "Malpractice Prevention:"
+                    echo "  Pushing to unapproved branches (e.g., 'build', arbitrary names, or renaming"
+                    echo "  branches to bypass commit-stage checks) is strictly prohibited."
+                    echo "================================================================================"
+                    exit 1
+                fi
+            fi
+
+            # Validate source local branch name if pushing from a local head
+            if [ -n "$LOCAL_REF" ] && echo "$LOCAL_REF" | grep -q "^refs/heads/"; then
+                LOCAL_BRANCH="${LOCAL_REF#refs/heads/}"
+                if ! echo "$LOCAL_BRANCH" | grep -Eq "$EXEMPT_BRANCHES"; then
+                    if ! echo "$LOCAL_BRANCH" | grep -Eq "$VALID_BRANCH_REGEX"; then
+                        echo "================================================================================"
+                        echo "❌ PUSH REJECTED: Invalid local branch name '$LOCAL_BRANCH'"
+                        echo "================================================================================"
+                        echo "Local source branch must adhere to the Infineo branch naming convention:"
+                        echo "  <type>/<developer>/<YYYY-MM-DD>/<description>"
+                        echo ""
+                        echo "Allowed types:"
+                        echo "  feature, bugfix, hotfix, chore, docs, refactor, test"
+                        echo ""
+                        echo "Malpractice Prevention:"
+                        echo "  Renaming local branches to unapproved names like 'build' before pushing"
+                        echo "  violates Infineo engineering policy."
+                        echo "================================================================================"
+                        exit 1
+                    fi
+                fi
+            fi
+            ;;
+        *)
+            # Non-head refs (e.g. tags) pass branch naming check
+            ;;
+    esac
+
+    # --------------------------------------------------------------------------
+    # Gate 3: Check for single-letter identifiers in commits being pushed
+    # --------------------------------------------------------------------------
+    if [ "${SKIP_IDENTIFIER_CHECK:-0}" != "1" ] && [ "${SKIP_SINGLE_LETTER_CHECK:-0}" != "1" ]; then
+        if [ -n "$PYTHON_BIN" ] && [ -n "$IDENTIFIER_SCRIPT" ]; then
+            if ! "$PYTHON_BIN" "$IDENTIFIER_SCRIPT" --pre-push "$LOCAL_SHA" "$REMOTE_SHA"; then
+                exit 1
+            fi
+        fi
+    fi
+done
+
+exit 0
