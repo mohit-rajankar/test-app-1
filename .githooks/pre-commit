@@ -33,7 +33,7 @@ if [ "${SKIP_BRANCH_CHECK:-0}" = "1" ]; then
 fi
 
 # Protected / Exempt branches that do not require the feature-branch convention.
-EXEMPT_BRANCHES="^(main|master|staging|production|develop|dev|release/.*)$"
+EXEMPT_BRANCHES="^(main|master|staging|production/.*)$"
 if [ "$RUN_BRANCH_CHECK" = "1" ] && echo "$CURRENT_BRANCH" | grep -Eq "$EXEMPT_BRANCHES"; then
     RUN_BRANCH_CHECK=0
 fi
@@ -62,7 +62,33 @@ if [ "$RUN_BRANCH_CHECK" = "1" ]; then
         echo "  chore/xyz/2026-10-15/update-ci-workflow"
         echo ""
         echo "Exempt branches:"
-        echo "  main, master, staging, production, develop, dev, release/*"
+        echo "  main, master, staging, production/*"
+        echo ""
+        echo "To detect your real developer username, run:"
+        echo "  python .githooks/get_developer_username.py"
+        echo ""
+        echo "To rename your local branch, run:"
+        echo "  git branch -m <valid-branch-name>"
+        echo "================================================================================"
+        exit 1
+    fi
+
+    # Reject generic placeholder developer identifiers (e.g. dev, developer, agent, xyz, temp)
+    BRANCH_DEVELOPER=$(echo "$CURRENT_BRANCH" | cut -d'/' -f2)
+    DISALLOWED_DEVELOPERS="^(dev|developer|agent|xyz|temp|test|placeholder|user)$"
+    if echo "$BRANCH_DEVELOPER" | grep -Eiq "$DISALLOWED_DEVELOPERS"; then
+        echo "================================================================================"
+        echo "❌ COMMIT REJECTED: Disallowed placeholder developer name '$BRANCH_DEVELOPER'"
+        echo "================================================================================"
+        echo "Branch names must use the real developer username, not placeholders like '$BRANCH_DEVELOPER'."
+        echo "Convention:"
+        echo "  <type>/<real-developer-username>/<YYYY-MM-DD>/<description>"
+        echo ""
+        echo "To detect your real username, run:"
+        echo "  python .githooks/get_developer_username.py"
+        echo ""
+        echo "To generate a policy-compliant branch name directly:"
+        echo "  python .githooks/get_developer_username.py <type> <description>"
         echo ""
         echo "To rename your local branch, run:"
         echo "  git branch -m <valid-branch-name>"

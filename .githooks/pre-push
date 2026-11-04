@@ -9,7 +9,7 @@
 #   Allowed types:
 #     feature, bugfix, hotfix, chore, docs, refactor, test
 #   Exempt branches:
-#     main, master, staging, production, develop, dev, release/*
+#     main, master, staging, production/*
 #   Malpractices Blocked:
 #     - Pushing to unapproved branch names (e.g. 'build', arbitrary names)
 #     - Renaming local branches after commit to bypass commit-stage checks
@@ -26,7 +26,8 @@ REMOTE_NAME="$1"
 REMOTE_URL="$2"
 
 VALID_BRANCH_REGEX="^(feature|bugfix|hotfix|chore|docs|refactor|test)/[a-zA-Z0-9_-]+/[0-9]{4}-[0-9]{2}-[0-9]{2}/[a-zA-Z0-9._-]+$"
-EXEMPT_BRANCHES="^(main|master|staging|production|develop|dev|release/.*)$"
+EXEMPT_BRANCHES="^(main|master|staging|production/.*)$"
+DISALLOWED_DEVELOPERS="^(dev|developer|agent|xyz|temp|test|placeholder|user)$"
 ZERO_SHA="0000000000000000000000000000000000000000"
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -60,7 +61,7 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
     # --------------------------------------------------------------------------
     if [ "$LOCAL_SHA" = "$ZERO_SHA" ] || [ "$LOCAL_REF" = "(delete)" ]; then
         REMOTE_BRANCH="${REMOTE_REF#refs/heads/}"
-        if echo "$REMOTE_BRANCH" | grep -Eq "^(main|master|production)$"; then
+        if echo "$REMOTE_BRANCH" | grep -Eq "^(main|master|staging)$" || echo "$REMOTE_BRANCH" | grep -Eq "^production/.*$"; then
             echo "================================================================================"
             echo "❌ PUSH REJECTED: Deletion of protected branch '$REMOTE_BRANCH' is prohibited."
             echo "================================================================================"
@@ -89,16 +90,33 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
                     echo "  feature, bugfix, hotfix, chore, docs, refactor, test"
                     echo ""
                     echo "Valid examples:"
-                    echo "  feature/xyz/2026-10-15/add-login-page"
-                    echo "  bugfix/xyz/2026-10-15/fix-login-error"
-                    echo "  chore/xyz/2026-10-15/update-ci-workflow"
+                    echo "  feature/mohit-rajankar/2026-10-15/add-login-page"
+                    echo "  bugfix/mohit-rajankar/2026-10-15/fix-login-error"
+                    echo "  chore/mohit-rajankar/2026-10-15/update-ci-workflow"
                     echo ""
                     echo "Exempt branches:"
-                    echo "  main, master, staging, production, develop, dev, release/*"
+                    echo "  main, master, staging, production/*"
                     echo ""
                     echo "Malpractice Prevention:"
                     echo "  Pushing to unapproved branches (e.g., 'build', arbitrary names, or renaming"
                     echo "  branches to bypass commit-stage checks) is strictly prohibited."
+                    echo ""
+                    echo "To detect your real developer username or generate a compliant branch name:"
+                    echo "  python .githooks/get_developer_username.py"
+                    echo "================================================================================"
+                    exit 1
+                fi
+
+                # Check for placeholder developer names
+                REMOTE_DEV=$(echo "$REMOTE_BRANCH" | cut -d'/' -f2)
+                if echo "$REMOTE_DEV" | grep -Eiq "$DISALLOWED_DEVELOPERS"; then
+                    echo "================================================================================"
+                    echo "❌ PUSH REJECTED: Disallowed placeholder developer name '$REMOTE_DEV' in remote branch '$REMOTE_BRANCH'"
+                    echo "================================================================================"
+                    echo "Branch names must use the real developer username, not placeholders like '$REMOTE_DEV'."
+                    echo ""
+                    echo "To detect your real username or suggest a branch name, run:"
+                    echo "  python .githooks/get_developer_username.py"
                     echo "================================================================================"
                     exit 1
                 fi
@@ -118,9 +136,29 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
                         echo "Allowed types:"
                         echo "  feature, bugfix, hotfix, chore, docs, refactor, test"
                         echo ""
+                        echo "Exempt branches:"
+                        echo "  main, master, staging, production/*"
+                        echo ""
                         echo "Malpractice Prevention:"
                         echo "  Renaming local branches to unapproved names like 'build' before pushing"
                         echo "  violates Infineo engineering policy."
+                        echo ""
+                        echo "To detect your real developer username or generate a compliant branch name:"
+                        echo "  python .githooks/get_developer_username.py"
+                        echo "================================================================================"
+                        exit 1
+                    fi
+
+                    # Check for placeholder developer names
+                    LOCAL_DEV=$(echo "$LOCAL_BRANCH" | cut -d'/' -f2)
+                    if echo "$LOCAL_DEV" | grep -Eiq "$DISALLOWED_DEVELOPERS"; then
+                        echo "================================================================================"
+                        echo "❌ PUSH REJECTED: Disallowed placeholder developer name '$LOCAL_DEV' in local branch '$LOCAL_BRANCH'"
+                        echo "================================================================================"
+                        echo "Branch names must use the real developer username, not placeholders like '$LOCAL_DEV'."
+                        echo ""
+                        echo "To detect your real username or suggest a branch name, run:"
+                        echo "  python .githooks/get_developer_username.py"
                         echo "================================================================================"
                         exit 1
                     fi
